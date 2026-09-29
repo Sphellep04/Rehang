@@ -9,14 +9,12 @@ The name comes from the hanger: a garment is "hung again" and gets a second life
 | | |
 |---|---|
 | **Status** | Phase 0: Validate (no code yet) |
-| **Plan version** | v2, 29 September 2026 (v1 was the original PDF plan. See [changes](#21-changes-from-the-original-plan)) |
+| **Plan version** | v2, 29 September 2026 (v1,  See [changes](#21-changes-from-the-original-plan)) |
 | **Owner** | Phellep Shapopi |
 | **Launch market** | Windhoek, Namibia |
 | **Planned stack** | Next.js (PWA) + Tailwind CSS + Supabase, hosted on Vercel |
 | **Key dates** | Go/no-go 27 Oct 2026 · Pilot Feb 2027 · Public launch Apr 2027 |
 
-> [!NOTE]
-> This README is the master plan. The detailed specs, policies and playbooks are in [`docs/`](docs/README.md). Costs, fees and targets are **planning assumptions to test, not market facts**. Policies and the legal section are **not legal advice**.
 
 ---
 
@@ -108,8 +106,6 @@ Regional and global models to learn from: **Yaga** (South Africa), **Vinted** an
 2. The pain is trust, search and safe payment, not demand.
 3. Vinted grew by solving exactly those three things, so the playbook is proven.
 
-> [!IMPORTANT]
-> This was a web search, not a full market study. Phase 0 validates it with real users: a [survey](docs/phase-0/survey.md), [interviews](docs/phase-0/interview-guide.md) and a [WhatsApp test](docs/phase-0/whatsapp-test-playbook.md).
 
 ---
 
@@ -1034,5 +1030,3 @@ Searched on 29 September 2026. Figures for costs, fees and targets in this plan 
 - PayAtlas: accepting payments in Namibia
 
 ---
-
-*The original full plan (PDF) is kept locally and is not tracked in this repository.*
