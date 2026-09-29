@@ -1,0 +1,2 @@
+item_id,seller,category,brand,size,condition,asking_price_nsd,posted_at,buyer_messages,offers,final_price_nsd,sold,sold_at,delivery_method,payment_method,no_show,issues,notes
+R001,Example Seller,Women > Jackets,Mr Price,UK 12 / M,Very good,180,2026-10-14 09:00,4,2,160,Y,2026-10-15 16:30,Meet-up (Maerua Mall),Instant EFT,N,,Example row - delete before use
