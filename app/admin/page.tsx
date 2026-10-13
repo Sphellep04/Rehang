@@ -14,6 +14,7 @@ import { AdminActions } from "./admin-actions";
 import { FlagActions } from "./flag-actions";
 import { ChatContext } from "./chat-context";
 import { DisputeDecision } from "./dispute-decision";
+import { InviteButton, MakeCode } from "./invite-tools";
 
 export const metadata: Metadata = { title: "Moderation | Rehang", robots: { index: false, follow: false } };
 
@@ -41,13 +42,15 @@ async function AdminContent() {
   const { data: claimsData } = await supabase.auth.getClaims();
   if (claimsData?.claims?.aal !== "aal2") redirect("/admin/security");
 
-  const [reportsResult, verificationsResult, disputesResult, logResult, flagsResult, accountFlagsResult] = await Promise.all([
+  const [reportsResult, verificationsResult, disputesResult, logResult, flagsResult, accountFlagsResult, waitlistResult, inviteOnlyResult] = await Promise.all([
     supabase.from("reports").select("id,reporter_id,target_type,target_id,reason,details,created_at").eq("status", "open").order("created_at").limit(50),
     supabase.from("verifications").select("id,user_id,status,legal_name,document_path,selfie_path,created_at").in("status", ["pending", "escalated"]).order("created_at").limit(50),
     supabase.from("disputes").select("order_id,opened_by,reason,buyer_statement,seller_statement,created_at").is("decided_at", null).order("created_at").limit(50),
     supabase.from("moderator_actions").select("id,actor_id,action,target_type,target_id,note,created_at").order("created_at", { ascending: false }).limit(30),
     supabase.from("item_flags").select("id,item_id,reason,detail,created_at").is("resolved_at", null).order("created_at").limit(50),
     supabase.from("account_flags").select("id,user_id,reason,detail,created_at").is("resolved_at", null).order("created_at").limit(50),
+    supabase.from("waitlist").select("id,contact,role,town,source,created_at").is("invited_at", null).order("created_at").limit(50),
+    supabase.rpc("signup_requires_invite"),
   ]);
 
   const reports = reportsResult.data ?? [];
@@ -61,6 +64,7 @@ async function AdminContent() {
   const log = logResult.data ?? [];
   const flags = flagsResult.data ?? [];
   const accountFlags = accountFlagsResult.data ?? [];
+  const waitlist = waitlistResult.data ?? [];
 
   // Names and titles for everything on the page, fetched in two batches.
   const itemIds = [...new Set([...reports.filter((r) => r.target_type === "item").map((r) => r.target_id as string), ...disputed.map((o) => o.item_id as string).filter(Boolean), ...flags.flatMap((f) => [f.item_id as string, (f.detail as { matches_item?: string }).matches_item ?? ""]).filter(Boolean)])];
@@ -206,6 +210,22 @@ async function AdminContent() {
               </li>
             );
           })}
+        </ul>
+
+        <h2 className="list-heading">Waiting list ({waitlist.length} waiting)</h2>
+        <p className="trade-hint">Sign-up is {inviteOnlyResult.data === true ? "invite-only" : "open to everyone"}. To change it: <code>update public.app_config set value = &apos;{inviteOnlyResult.data === true ? "false" : "true"}&apos;::jsonb where key = &apos;signup_requires_invite&apos;;</code></p>
+        <MakeCode />
+        <ul className="list-cards">
+          {waitlist.map((entry) => (
+            <li className="list-card admin-card" key={entry.id as string}>
+              <div className="list-card-main">
+                <b>{entry.contact as string}</b>
+                <p>{entry.role as string}{entry.town ? ` · ${entry.town as string}` : ""}{entry.source ? ` · via ${entry.source as string}` : ""}</p>
+                <small>{formatWindhoek(entry.created_at as string)}</small>
+              </div>
+              <InviteButton id={entry.id as string} />
+            </li>
+          ))}
         </ul>
 
         <h2 className="list-heading">Recent actions</h2>

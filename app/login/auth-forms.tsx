@@ -26,11 +26,18 @@ export function SignInForm({ next }: { next: string }) {
   );
 }
 
-export function SignUpForm() {
+export function SignUpForm({ requiresInvite = false, defaultInvite = "" }: { requiresInvite?: boolean; defaultInvite?: string }) {
   const [state, action, pending] = useActionState(signUp, initial);
   if (state.status === "done") return <p className="trade-success" role="status">{state.message} Open it on this device to finish setting up your shop.</p>;
   return (
     <form className="auth-form" action={action}>
+      {requiresInvite && (
+        <>
+          <label htmlFor="invite">Invite code</label>
+          <input id="invite" name="invite" autoComplete="off" autoCapitalize="characters" maxLength={12} defaultValue={defaultInvite} required />
+          <small className="auth-hint">Rehang is invite-only for now. <Link href="/join">Join the waiting list</Link> to get a code.</small>
+        </>
+      )}
       <label htmlFor="email">Email</label>
       <input id="email" name="email" type="email" autoComplete="email" required />
       <label htmlFor="password">Password</label>

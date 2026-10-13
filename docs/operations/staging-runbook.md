@@ -11,6 +11,7 @@ Everything in this file is something only the project owner can do, because it n
 6. Check the storage buckets exist: `id-documents` (private), `avatars`, `item-photos`, `dispute-evidence`.
 7. Make yourself a moderator: set `role` on your row in `public.users` using the SQL editor.
 8. Staff two-factor: sign in, open `/admin/security` and add the authenticator app. Then switch on database enforcement: `update public.app_config set value = 'true'::jsonb where key = 'require_moderator_mfa';`. Do it only after every moderator has enrolled, or they are locked out of actions.
+9. Invite-only sign-up (optional): `update public.app_config set value = 'true'::jsonb where key = 'signup_requires_invite';`. Then create codes or email people from the waiting list in `/admin`. Switch back to `'false'` to open sign-up to everyone. The check is a trigger on `auth.users`, so it holds even if someone calls the Supabase sign-up API directly.
 
 ## 2. Resend
 1. Add your domain and publish the DNS records it shows.

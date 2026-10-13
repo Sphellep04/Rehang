@@ -588,10 +588,11 @@ Each milestone should end with something usable on a phone.
 
 #### M6: Pilot launch prep (February 2027)
 
-- [ ] Policies published: terms, privacy, seller rules, buyer protection, prohibited items
+- [x] Policies published at `/terms`, `/privacy`, `/seller-rules`, `/buyer-protection`, `/prohibited-items` (from `docs/policies`; still needs a lawyer's review), plus a `/safe-spots` page
 - [ ] [Security checklist](docs/engineering/security-and-backups.md#pre-pilot-security-checklist) complete
 - [ ] Analytics dashboards ([events](docs/engineering/analytics-events.md))
-- [ ] Waiting list, invite codes, share links with preview images
+- [x] Waiting list (`/join`) and invite codes (admin creates or emails them; `signup_requires_invite` makes sign-up invite-only, enforced in the database)
+- [ ] Share links with preview images
 - [ ] [Pilot launch checklist](docs/operations/launch-checklist.md) done
 
 #### M7: Held payments (March 2027, during the pilot, behind a feature flag)

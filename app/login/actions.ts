@@ -53,9 +53,19 @@ export async function signUp(_previous: AuthState, formData: FormData): Promise<
   if (!isSupabaseConfigured()) return notConfigured;
 
   const supabase = await createClient();
+  // In invite-only mode the database refuses sign-ups without a valid code. Checking first gives a clear message.
+  const { data: inviteOnly } = await supabase.rpc("signup_requires_invite");
+  const invite = String(formData.get("invite") ?? "").trim().toUpperCase();
+  if (inviteOnly === true) {
+    const { data: valid } = await supabase.rpc("check_invite", { p_code: invite });
+    if (valid !== true) return { status: "error", message: "That invite code isn't valid or has been used. Join the waiting list to get one." };
+  }
   const { error } = await supabase.auth.signUp({
     ...parsed.data,
-    options: { emailRedirectTo: `${await siteOrigin()}/auth/confirm?next=/onboarding` },
+    options: {
+      emailRedirectTo: `${await siteOrigin()}/auth/confirm?next=/onboarding`,
+      ...(inviteOnly === true ? { data: { invite_code: invite } } : {}),
+    },
   });
   if (error) {
     if (error.code === "weak_password") return { status: "error", message: "That password is too easy to guess. Try a longer one." };

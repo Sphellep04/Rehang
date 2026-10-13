@@ -83,3 +83,14 @@ export function renderDigestEmail(items: DigestItem[], total: number, name: stri
     html: wrap(subject, `<p style="margin:0 0 12px">${escapeHtml(hello)}</p><ul style="padding-left:18px;margin:0">${rows}</ul>${moreHtml}${button(`${siteUrl()}/browse`, "Browse Rehang")}`, settingsLine()),
   };
 }
+
+export function renderInviteEmail(code: string): RenderedEmail {
+  const link = `${siteUrl()}/signup?invite=${encodeURIComponent(code)}`;
+  const subject = "Your Rehang invite";
+  const line = "A spot has opened for you on Rehang, the marketplace for second-hand clothes in Namibia. Your invite works for 14 days and can be used once.";
+  return {
+    subject,
+    text: `Hi,\n\n${line}\n\nInvite code: ${code}\nCreate your account: ${link}\n\nIf you did not ask to join the waiting list, you can ignore this email.`,
+    html: wrap(subject, `<p style="margin:0 0 8px">Hi,</p><p style="margin:0">${escapeHtml(line)}</p><p style="margin:16px 0 0;font-size:22px;letter-spacing:3px;font-weight:bold">${escapeHtml(code)}</p>${button(link, "Create your account")}`, "If you did not ask to join the waiting list, you can ignore this email."),
+  };
+}
