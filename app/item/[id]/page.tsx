@@ -86,6 +86,7 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
         <div className="item-details">
           <p className="eyebrow">{listing.category} · SIZE {listing.size}</p>
           <h1>{listing.title}</h1>
+          {listing.photosReviewed && <p className="trade-hint"><span className="badge badge-green">Photos reviewed</span> A moderator compared the label and stitching photos. This is not a guarantee that the item is genuine.</p>}
           <p className="item-price">{formatPrice(listing.price)}</p>
           <p className="item-meta">{listing.condition} condition · {listing.town}</p>
           {listing.description && <p className="item-description">{listing.description}</p>}

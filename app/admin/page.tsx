@@ -11,7 +11,8 @@ import { PageLoading } from "../_components/page-loading";
 import { SiteHeader } from "../_components/site-header";
 import { reportReasons } from "@/lib/moderation";
 import { AdminActions } from "./admin-actions";
-import { FlagDismiss } from "./flag-dismiss";
+import { FlagActions } from "./flag-actions";
+import { ChatContext } from "./chat-context";
 import { DisputeDecision } from "./dispute-decision";
 
 export const metadata: Metadata = { title: "Moderation | Rehang", robots: { index: false, follow: false } };
@@ -36,13 +37,17 @@ async function AdminContent() {
   const { data: me } = await supabase.from("users").select("role").eq("id", viewerId).maybeSingle();
   // Members get the same page as a missing one, so the route does not advertise itself.
   if (me?.role !== "moderator" && me?.role !== "admin") notFound();
+  // Staff must have passed two-factor in this session (Supabase marks that as aal2).
+  const { data: claimsData } = await supabase.auth.getClaims();
+  if (claimsData?.claims?.aal !== "aal2") redirect("/admin/security");
 
-  const [reportsResult, verificationsResult, disputesResult, logResult, flagsResult] = await Promise.all([
+  const [reportsResult, verificationsResult, disputesResult, logResult, flagsResult, accountFlagsResult] = await Promise.all([
     supabase.from("reports").select("id,reporter_id,target_type,target_id,reason,details,created_at").eq("status", "open").order("created_at").limit(50),
     supabase.from("verifications").select("id,user_id,status,legal_name,document_path,selfie_path,created_at").in("status", ["pending", "escalated"]).order("created_at").limit(50),
     supabase.from("disputes").select("order_id,opened_by,reason,buyer_statement,seller_statement,created_at").is("decided_at", null).order("created_at").limit(50),
     supabase.from("moderator_actions").select("id,actor_id,action,target_type,target_id,note,created_at").order("created_at", { ascending: false }).limit(30),
-    supabase.from("item_flags").select("id,item_id,detail,created_at").is("resolved_at", null).order("created_at").limit(50),
+    supabase.from("item_flags").select("id,item_id,reason,detail,created_at").is("resolved_at", null).order("created_at").limit(50),
+    supabase.from("account_flags").select("id,user_id,reason,detail,created_at").is("resolved_at", null).order("created_at").limit(50),
   ]);
 
   const reports = reportsResult.data ?? [];
@@ -55,12 +60,14 @@ async function AdminContent() {
   const orderById = new Map(disputed.map((order) => [order.id, order]));
   const log = logResult.data ?? [];
   const flags = flagsResult.data ?? [];
+  const accountFlags = accountFlagsResult.data ?? [];
 
   // Names and titles for everything on the page, fetched in two batches.
   const itemIds = [...new Set([...reports.filter((r) => r.target_type === "item").map((r) => r.target_id as string), ...disputed.map((o) => o.item_id as string).filter(Boolean), ...flags.flatMap((f) => [f.item_id as string, (f.detail as { matches_item?: string }).matches_item ?? ""]).filter(Boolean)])];
   const userIds = [...new Set([
     ...reports.flatMap((r) => [r.reporter_id as string, ...(r.target_type === "user" ? [r.target_id as string] : [])]),
     ...verifications.map((v) => v.user_id as string),
+    ...accountFlags.map((f) => f.user_id as string),
     ...disputed.flatMap((o) => [o.buyer_id as string, o.seller_id as string]),
     ...log.map((entry) => entry.actor_id as string),
   ])];
@@ -103,7 +110,7 @@ async function AdminContent() {
                   <p>
                     {report.target_type === "item" && <>Listing: {item ? <Link href={`/item/${item.id as string}`}>{item.title as string}</Link> : "removed"}{item ? <> by {who(item.seller_id as string)}</> : null}</>}
                     {report.target_type === "user" && <>Person: {who(report.target_id as string)}</>}
-                    {report.target_type === "message" && <>A chat message (open the conversation from the database to read it)</>}
+                    {report.target_type === "message" && <>A chat message<br /><ChatContext reportId={report.id as string} /></>}
                     {" "}· reported by {who(report.reporter_id as string)}
                   </p>
                   {report.details && <p className="admin-quote">“{report.details as string}”</p>}
@@ -134,21 +141,47 @@ async function AdminContent() {
           })}
         </ul>
 
-        <h2 className="list-heading">Photo matches ({flags.length})</h2>
-        {flags.length === 0 && <p className="trade-hint">No suspicious photos.</p>}
+        <h2 className="list-heading">Listing flags ({flags.length})</h2>
+        {flags.length === 0 && <p className="trade-hint">No flagged listings.</p>}
         <ul className="list-cards">
           {flags.map((flag) => {
             const item = itemById.get(flag.item_id as string);
             const detail = flag.detail as { matches_item?: string; distance?: number };
             const other = detail.matches_item ? itemById.get(detail.matches_item) : undefined;
+            const brand = flag.reason === "brand_check";
             return (
               <li className="list-card admin-card" key={flag.id as string}>
                 <div className="list-card-main">
-                  <b>Photo matches another seller</b>
-                  <p>{item ? <Link href={`/item/${item.id as string}`}>{item.title as string}</Link> : "A listing"} by {item ? who(item.seller_id as string) : "unknown"} looks like {other ? <Link href={`/item/${other.id as string}`}>{other.title as string}</Link> : "another listing"}{other ? <> by {who(other.seller_id as string)}</> : null}. If it is a copy, report the newer listing from its page.</p>
-                  <small>{formatWindhoek(flag.created_at as string)} · difference {detail.distance ?? "?"} of 64</small>
+                  <b>{brand ? "Brand check (over N$1,500)" : "Photo matches another seller"}</b>
+                  <p>{item ? <Link href={`/item/${item.id as string}`}>{item.title as string}</Link> : "A listing"} by {item ? who(item.seller_id as string) : "unknown"}.
+                    {brand ? " Compare the label, stitching and any serial photos with the brand's genuine items. Approving adds a Photos reviewed label, not a guarantee."
+                      : <> It looks like {other ? <Link href={`/item/${other.id as string}`}>{other.title as string}</Link> : "another listing"}{other ? <> by {who(other.seller_id as string)}</> : null}. If it is a copy, report the newer listing from its page.</>}</p>
+                  <small>{formatWindhoek(flag.created_at as string)}{brand ? "" : ` · difference ${detail.distance ?? "?"} of 64`}</small>
                 </div>
-                <FlagDismiss id={flag.id as string} />
+                <FlagActions kind="item" id={flag.id as string} reason={flag.reason as "duplicate_photo" | "brand_check"} />
+              </li>
+            );
+          })}
+        </ul>
+
+        <h2 className="list-heading">Account flags ({accountFlags.length})</h2>
+        {accountFlags.length === 0 && <p className="trade-hint">No flagged accounts.</p>}
+        <ul className="list-cards">
+          {accountFlags.map((flag) => {
+            const detail = flag.detail as Record<string, number>;
+            const text: Record<string, string> = {
+              new_account_high_value: `New account with ${detail.expensive_items ?? "several"} listings over N$1,000.`,
+              repeat_strikes: `${detail.strikes_in_90_days ?? "Several"} strikes in 90 days.`,
+              contact_sharing: `${detail.messages ?? "Several"} messages with contact details in ${detail.conversations ?? "several"} chats this week.`,
+            };
+            return (
+              <li className="list-card admin-card" key={flag.id as string}>
+                <div className="list-card-main">
+                  <b>{who(flag.user_id as string)}</b>
+                  <p>{text[flag.reason as string] ?? (flag.reason as string)} The guide says to review when two signals appear. Hold, ask for extra photos, re-verify, then suspend if unsatisfied.</p>
+                  <small>{formatWindhoek(flag.created_at as string)}</small>
+                </div>
+                <FlagActions kind="account" id={flag.id as string} />
               </li>
             );
           })}

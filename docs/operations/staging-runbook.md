@@ -10,6 +10,7 @@ Everything in this file is something only the project owner can do, because it n
 5. Auth, SMTP: use Resend (host `smtp.resend.com`, port 465, user `resend`, password = your Resend API key).
 6. Check the storage buckets exist: `id-documents` (private), `avatars`, `item-photos`, `dispute-evidence`.
 7. Make yourself a moderator: set `role` on your row in `public.users` using the SQL editor.
+8. Staff two-factor: sign in, open `/admin/security` and add the authenticator app. Then switch on database enforcement: `update public.app_config set value = 'true'::jsonb where key = 'require_moderator_mfa';`. Do it only after every moderator has enrolled, or they are locked out of actions.
 
 ## 2. Resend
 1. Add your domain and publish the DNS records it shows.
@@ -28,7 +29,7 @@ Everything in this file is something only the project owner can do, because it n
 ## 4. Check after the first deploy
 - Sign up, receive the confirmation email, sign in.
 - Publish a listing with three photos; confirm the card image loads.
-- Run both cron routes by hand: `curl -H "Authorization: Bearer $CRON_SECRET" https://<site>/api/cron/emails` (expect `{"sent":...}` not 401 or 503).
+- Run every cron route by hand (`emails`, `digest`, `id-images`, `trust`): `curl -H "Authorization: Bearer $CRON_SECRET" https://<site>/api/cron/emails` (expect `{"sent":...}` not 401 or 503).
 - Submit ID verification as a test user, approve it as a moderator, wait for or trigger `/api/cron/id-images`, and confirm the files are removed from the `id-documents` bucket.
 - Delete a test account and confirm the export download works first.
 - On a phone, open the site and use Add to Home Screen. Turn on airplane mode and confirm the offline page shows.

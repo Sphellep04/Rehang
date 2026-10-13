@@ -574,17 +574,17 @@ Each milestone should end with something usable on a phone.
 - [x] Meet-up code: buyer-only display, validity window, lockout after 5 attempts
 - [ ] Timers, cancellations, "they didn't show", strikes ladder. Done in SQL and the order page. Still to do: enable pg_cron on the hosted project so `process_order_timers` runs
 - [x] Reviews from both sides after completion (7 day window; ratings on shop pages, item pages and orders)
-- [ ] "Report a problem" on orders
+- [x] "Report a problem" on orders: either person can report after the meet-up time or within 7 days of completion, the other side replies once, and a moderator decides (seller at fault, buyer at fault, no fault, or it did happen). Fault gives a strike. A locked meet-up code now goes to the moderators as a problem instead of hanging
 
 #### M5: Trust and moderation (February 2027)
 
-- [ ] Report and block on listings, users and messages. Done: report listings and people, block people. Still to do: report and block from inside chat
+- [x] Report and block on listings, users and messages, including from inside chat. Moderators can read a reported message with the ones around it, and every look is logged
 - [x] My listings (`/my-listings`): edit price and text, mark sold, remove, relist, publish drafts. Price drops notify people who saved the item
 - [x] Account page with data download and account deletion (`/account`; personal details erased, order records kept for the other party)
-- [ ] Admin dashboard: verifications, reports, order problems, flags, brand checks, freeze or suspend. Done: `/admin` queue for reports, ID checks and orders under review, with remove, restrict and suspend. Still to do: flags, brand checks, resolving disputed orders
-- [ ] Moderator action log. Two-factor login for moderators. Done: action log. Still to do: two-factor login
-- [ ] Scam signal flags ([list](docs/operations/moderator-guide.md#scam-signals))
-- [ ] Trusted-seller job
+- [x] Admin dashboard (`/admin`): verifications, reports, order problems with a decision form, listing flags (duplicate photos and brand checks), account flags, restrict or suspend. Earlier notes: `/admin` queue for reports, ID checks and orders under review, with remove, restrict and suspend. Still to do: flags, brand checks, resolving disputed orders
+- [x] Moderator action log, and two-factor login for moderators (authenticator app at `/admin/security`). The queue always needs two-factor; the database also refuses staff actions without it once `require_moderator_mfa` is switched on (see the runbook)
+- [x] Scam signal flags ([list](docs/operations/moderator-guide.md#scam-signals)): new accounts with several expensive listings, two or more strikes, repeated contact details across chats, and duplicate photos. Not built: price far below the usual range for a brand (needs price data per brand) and several accounts on one device (needs device fingerprints)
+- [x] Trusted-seller job (daily): 10 completed sales, at least 5 reviews averaging 4.5 or more, account 60+ days old, no upheld dispute in 180 days. Lost under 4.3 or after an upheld dispute. Runs in `pg_cron` when available and from `/api/cron/trust`. Search priority for trusted sellers is not built
 
 #### M6: Pilot launch prep (February 2027)
 

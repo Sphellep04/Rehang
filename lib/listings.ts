@@ -32,6 +32,8 @@ export type Listing = {
   sellerHandle: string;
   verified: boolean;
   trusted: boolean;
+  /** A moderator compared the label and stitching photos. Not a guarantee of authenticity. */
+  photosReviewed?: boolean;
   town: string;
   status: "draft" | "awaiting_verification" | "active" | "reserved" | "sold" | "removed";
   publishedAt: string | null;
@@ -121,7 +123,7 @@ export function categoryIdsFor(slug: string, categories: CategoryRow[]): number[
 }
 
 export const ITEM_COLUMNS =
-  "id,seller_id,title,description,condition,price_cents,status,published_at,category_id,size_id,town_id,item_photos(path_card,kind,position)";
+  "id,seller_id,title,description,condition,price_cents,status,published_at,photos_reviewed_at,category_id,size_id,town_id,item_photos(path_card,kind,position)";
 
 type ItemRow = {
   id: string;
@@ -132,6 +134,7 @@ type ItemRow = {
   price_cents: number;
   status: "draft" | "awaiting_verification" | "active" | "reserved" | "sold" | "removed";
   published_at: string | null;
+  photos_reviewed_at?: string | null;
   category_id: number;
   size_id: number;
   town_id: number;
@@ -178,6 +181,7 @@ export async function hydrateListings(supabase: SupabaseClient, rows: ItemRow[])
       sellerHandle: (profile?.handle as string | undefined) ?? "",
       verified: profile?.verification_level === "level2",
       trusted: Boolean(profile?.is_trusted_seller),
+      photosReviewed: Boolean(row.photos_reviewed_at),
       town: townById.get(row.town_id) ?? "Windhoek",
       status: row.status,
       publishedAt: row.published_at,

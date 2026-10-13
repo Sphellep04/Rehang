@@ -56,3 +56,7 @@ content_path = "./supabase/templates/confirmation.html"
 [auth.email.template.recovery]
 subject = "Reset your Rehang password"
 content_path = "./supabase/templates/recovery.html"
+# Authenticator-app (TOTP) two-factor, used by staff at /admin/security.
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true

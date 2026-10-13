@@ -35,6 +35,7 @@ function describe(kind: string, payload: Record<string, unknown>): Note {
     case "dispute_opened": return { text: "A problem was reported on an order. Open it to read it and reply.", href: order };
     case "dispute_response": return { text: "The other person replied to a reported problem.", href: order };
     case "dispute_decided": return { text: "Our team has made a decision on a reported problem.", href: order };
+    case "trusted_seller_gained": return { text: "You are now a Trusted seller. Your badge shows on your shop and listings.", href: "/my-listings" };
     case "order_completed": return { text: "An order was completed.", href: order };
     case "order_cancelled": return { text: "An order was cancelled.", href: order };
     case "cancel_agreement_requested": return { text: "The other person asked to cancel an order together.", href: order };

@@ -568,3 +568,11 @@ a.plain-button:hover { color: var(--coral-dark); }
 .photo-previews img { display: block; width: 72px; height: 72px; object-fit: cover; border: 1px solid #e0d7ca; }
 .photo-remove { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: var(--ink); color: #fff; font-size: 14px; line-height: 1; cursor: pointer; }
 .photo-warning { display: block; margin-top: 2px; color: var(--coral-dark); font-size: 9px; font-weight: 700; }
+
+/* Chat report links and moderator chat view */
+.chat-toolbar-actions { display: flex; align-items: center; gap: 12px; }
+.chat-message .report-box { margin-top: 4px; font-size: 11px; }
+.admin-chat { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.admin-chat li { padding: 8px 10px; background: #fdfbf7; border-left: 3px solid #e0d7ca; }
+.admin-chat li[data-reported="true"] { border-left-color: var(--coral); background: #fff4ef; }
+.admin-chat p { margin: 2px 0 0; }
