@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { SiteNav } from "./_components/site-nav";
 
 type Listing = {
   id: string;
@@ -232,13 +233,10 @@ export default function Home() {
         <a className="wordmark" href="#top"><HangerMark />rehang<span className="coral">.</span></a>
         <span className="location"><i /> Windhoek, Namibia</span>
         <form className="search-box" role="search" onSubmit={(event) => { event.preventDefault(); if (isLiveCatalog) router.push(query.trim() ? `/browse?q=${encodeURIComponent(query.trim())}` : "/browse"); }}><span aria-hidden="true">⌕</span><label className="sr-only" htmlFor="home-search">Search listings</label><input id="home-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search clothes, brands, sizes..." /></form>
-        <nav className="header-actions" aria-label="Main navigation">
-          {isLiveCatalog
-            ? <Link className="saved-link" href={isSignedIn ? "/saved" : "/login"}>♡ Saved</Link>
-            : <button className="saved-link" type="button" onClick={() => setSavedOnly((value) => !value)}>♡ Saved{saved.length > 0 && <b>{saved.length}</b>}</button>}
-          {isSignedIn ? <Link className="plain-button" href="/inbox">Messages</Link> : <Link className="plain-button" href="/login">Sign in</Link>}
-          <Link className="button button-coral" href="/sell">Sell an item <span>+</span></Link>
-        </nav>
+        <SiteNav
+          signedIn={isSignedIn}
+          savedControl={isLiveCatalog ? undefined : <button className="nav-link nav-saved" type="button" onClick={() => setSavedOnly((value) => !value)}><span aria-hidden="true">♡</span><span className="nav-label"> Saved</span>{saved.length > 0 && <b>{saved.length}</b>}</button>}
+        />
       </header>
 
       <section className="hero" id="top">

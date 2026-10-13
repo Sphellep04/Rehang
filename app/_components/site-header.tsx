@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { signOut } from "../login/actions";
+import { SiteNav } from "./site-nav";
 
 export function HangerMark() {
   return (
@@ -19,26 +19,7 @@ export function SiteHeader({ signedIn, query = "" }: { signedIn: boolean; query?
         <label className="sr-only" htmlFor="site-search">Search listings</label>
         <input id="site-search" name="q" type="search" defaultValue={query} maxLength={80} placeholder="Search clothes, brands, sizes..." />
       </form>
-      <nav className="header-actions" aria-label="Main navigation">
-        <Link className="plain-button" href="/browse">Browse</Link>
-        <Link className="plain-button" href={signedIn ? "/saved" : "/login"}>♡ Saved</Link>
-        {signedIn ? (
-          <>
-            <Link className="plain-button" href="/inbox">Messages</Link>
-            <Link className="plain-button" href="/offers">Offers</Link>
-            <Link className="plain-button" href="/orders">Orders</Link>
-            <Link className="plain-button" href="/notifications" aria-label="Notifications">Updates</Link>
-            <Link className="plain-button" href="/account">Account</Link>
-            <form action={signOut}><button className="plain-button header-signout" type="submit">Sign out</button></form>
-          </>
-        ) : (
-          <>
-            <Link className="plain-button" href="/login">Sign in</Link>
-            <Link className="plain-button" href="/signup">Create account</Link>
-          </>
-        )}
-        <Link className="button button-coral" href="/sell">Sell an item <span>+</span></Link>
-      </nav>
+      <SiteNav signedIn={signedIn} />
     </header>
   );
 }
