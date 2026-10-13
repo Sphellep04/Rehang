@@ -541,7 +541,7 @@ Each milestone should end with something usable on a phone.
 - [ ] Confirm end-to-end OTP delivery with an SMS provider for MTC and TN Mobile
 - [ ] Add profile photo and Level 1 email verification
 - [x] Profile and public shop page at `/[handle]`
-- [ ] ID plus live selfie upload to the private bucket (Level 2), and the ID number hash check
+- [ ] ID plus live selfie upload to the private bucket (Level 2), and the ID number hash check. Done: upload, review and approval at `/verify` and `/admin`. Still to do: the ID number hash check
 - [ ] `verification_level` gating in RLS and in the UI. Limits read from `app_config`
 - [ ] ID image deletion job
 
@@ -576,9 +576,9 @@ Each milestone should end with something usable on a phone.
 
 #### M5: Trust and moderation (February 2027)
 
-- [ ] Report and block on listings, users and messages
-- [ ] Admin dashboard: verifications, reports, order problems, flags, brand checks, freeze or suspend
-- [ ] Moderator action log. Two-factor login for moderators
+- [ ] Report and block on listings, users and messages. Done: report listings and people, block people. Still to do: report and block from inside chat
+- [ ] Admin dashboard: verifications, reports, order problems, flags, brand checks, freeze or suspend. Done: `/admin` queue for reports, ID checks and orders under review, with remove, restrict and suspend. Still to do: flags, brand checks, resolving disputed orders
+- [ ] Moderator action log. Two-factor login for moderators. Done: action log. Still to do: two-factor login
 - [ ] Scam signal flags ([list](docs/operations/moderator-guide.md#scam-signals))
 - [ ] Trusted-seller job
 

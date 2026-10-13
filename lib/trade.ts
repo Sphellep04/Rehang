@@ -39,6 +39,20 @@ const messages: Record<string, string> = {
   meetup_too_soon: "Pick a time at least 3 hours from now.",
   meetup_too_late: "The meet-up must be within 3 days of the order.",
   meetup_outside_hours: "That time is outside the spot's opening hours.",
+  not_allowed: "You don't have permission to do that.",
+  report_target_not_found: "We couldn't find what you're trying to report.",
+  cannot_report_yourself: "You can't report yourself.",
+  too_many_reports: "You've sent a lot of reports today. Please try again tomorrow.",
+  report_not_found: "We couldn't find that report.",
+  report_already_handled: "Someone has already handled this report.",
+  cannot_act_on_staff: "You can't take action against staff accounts.",
+  invalid_upload: "Those files didn't upload properly. Please try again.",
+  verification_already_pending: "Your documents are already being reviewed.",
+  already_verified: "You're already verified.",
+  verification_not_found: "We couldn't find that verification.",
+  already_reviewed: "This verification has already been reviewed.",
+  cannot_review_own: "You can't review your own verification.",
+  reason_required: "Please give a reason so the person knows what to fix.",
 };
 
 export function tradeError(message: string | undefined | null): string {

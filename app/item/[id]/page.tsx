@@ -12,6 +12,7 @@ import { savedIdsFor } from "@/lib/saved";
 import { FollowButton } from "../../_components/follow-button";
 import { ListingCard } from "../../_components/listing-card";
 import { MessageSellerButton } from "../../_components/message-seller-button";
+import { ReportButton } from "../../_components/report-button";
 import { SaveButton } from "../../_components/save-button";
 import { TradePanel } from "../../_components/trade-panel";
 import { SiteHeader } from "../../_components/site-header";
@@ -110,6 +111,8 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
             </Link>
             {!isOwner && <FollowButton sellerId={listing.sellerId} sellerName={listing.seller} initialFollowing={Boolean(followResult.data)} signedIn={signedIn} />}
           </div>
+
+          {!isOwner && <ReportButton targetType="item" targetId={listing.id} signedIn={signedIn} label="Report this listing" />}
 
           <p className="item-safety">Keep your conversation in Rehang and meet in a public place. Never send money before you have seen the item. Personal phone numbers stay private.</p>
         </div>

@@ -472,3 +472,15 @@ a.plain-button:hover { color: var(--coral-dark); }
   .order-form-row { grid-template-columns: 1fr; }
   .header-actions { flex-wrap: wrap; }
 }
+
+/* Trust and moderation */
+.report-box { margin-top: 14px; }
+.report-link { padding: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 10px; text-decoration: underline; text-underline-offset: 3px; }
+.shop-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.order-form textarea { padding: 10px; border: 1px solid #b9afa1; background: var(--white); color: var(--ink); font: inherit; resize: vertical; }
+.verify-form input[type="file"] { padding: 10px; border: 1px dashed #b9afa1; background: var(--white); font-size: 11px; min-height: 0; }
+.admin-card { align-items: flex-start; }
+.admin-actions { display: grid; gap: 8px; min-width: min(100%, 300px); }
+.admin-actions input { min-height: 38px; padding: 0 10px; border: 1px solid #b9afa1; background: var(--white); color: var(--ink); }
+.admin-quote { color: var(--muted); font-style: italic; }
+.list-card-main a { text-decoration: underline; text-underline-offset: 3px; }

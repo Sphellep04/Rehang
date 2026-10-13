@@ -10,6 +10,8 @@ import { getViewerId } from "@/lib/supabase/viewer";
 import { listingsForSeller } from "@/lib/listings";
 import { savedIdsFor } from "@/lib/saved";
 import { FollowButton } from "../_components/follow-button";
+import { BlockButton } from "../_components/block-button";
+import { ReportButton } from "../_components/report-button";
 import { ListingCard } from "../_components/listing-card";
 import { SiteHeader } from "../_components/site-header";
 
@@ -56,12 +58,15 @@ async function ShopContent({ params }: { params: PageProps<"/[handle]">["params"
   const signedIn = viewerId !== null;
   const isOwner = viewerId === sellerId;
 
-  const [statsResult, active, sold, followResult] = await Promise.all([
+  const [statsResult, active, sold, followResult, blockResult] = await Promise.all([
     supabase.rpc("shop_stats", { p_seller: sellerId }).maybeSingle(),
     listingsForSeller(supabase, sellerId, "active"),
     listingsForSeller(supabase, sellerId, "sold"),
     viewerId && !isOwner
       ? supabase.from("follows").select("seller_id").eq("seller_id", sellerId).maybeSingle()
+      : Promise.resolve({ data: null }),
+    viewerId && !isOwner
+      ? supabase.from("blocks").select("blocked_id").eq("blocked_id", sellerId).maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
 
@@ -100,7 +105,13 @@ async function ShopContent({ params }: { params: PageProps<"/[handle]">["params"
         <div className="shop-actions">
           {isOwner
             ? <Link className="button button-outline" href="/sell">Add a listing</Link>
-            : <FollowButton sellerId={sellerId} sellerName={name} initialFollowing={Boolean(followResult.data)} signedIn={signedIn} />}
+            : (
+              <>
+                <FollowButton sellerId={sellerId} sellerName={name} initialFollowing={Boolean(followResult.data)} signedIn={signedIn} />
+                <ReportButton targetType="user" targetId={sellerId} signedIn={signedIn} label="Report" />
+                <BlockButton userId={sellerId} name={name} initialBlocked={Boolean(blockResult.data)} signedIn={signedIn} />
+              </>
+            )}
         </div>
       </section>
 
