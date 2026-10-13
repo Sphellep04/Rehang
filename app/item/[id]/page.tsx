@@ -17,6 +17,8 @@ import { SaveButton } from "../../_components/save-button";
 import { Stars } from "../../_components/stars";
 import { TradePanel } from "../../_components/trade-panel";
 import { SiteHeader } from "../../_components/site-header";
+import { ShareButton } from "../../_components/share-button";
+import { shareText, siteUrl } from "@/lib/site";
 
 export async function generateMetadata({ params }: PageProps<"/item/[id]">): Promise<Metadata> {
   const { id } = await params;
@@ -26,7 +28,8 @@ export async function generateMetadata({ params }: PageProps<"/item/[id]">): Pro
   return {
     title: `${listing.title} · ${formatPrice(listing.price)} | Rehang`,
     description: `${listing.condition}, size ${listing.size}. Sold by ${listing.seller} in ${listing.town}.`,
-    openGraph: listing.image ? { images: [listing.image] } : undefined,
+    alternates: { canonical: `/item/${id}` },
+    openGraph: { title: listing.title, description: `${formatPrice(listing.price)} · ${listing.condition} · size ${listing.size} · ${listing.town}`, url: `/item/${id}`, ...(listing.image ? { images: [{ url: listing.image, alt: listing.title }] } : {}) },
   };
 }
 
@@ -97,6 +100,7 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
             {available && !isOwner && <MessageSellerButton itemId={listing.id} sellerId={listing.sellerId} />}
             {isOwner && <p className="item-note">This is your listing.</p>}
             {!available && !isOwner && <p className="item-note">This piece is no longer available. Browse similar items or follow the seller.</p>}
+            <ShareButton url={`${siteUrl()}/item/${listing.id}`} text={shareText("item", listing.title)} object="item" />
             {listing.status !== "sold" && (
               <span className="item-save">
                 <SaveButton itemId={listing.id} title={listing.title} initialSaved={saved.has(listing.id)} signedIn={signedIn} className="save-button save-button-inline" />

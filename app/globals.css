@@ -590,3 +590,11 @@ a.plain-button:hover { color: var(--coral-dark); }
 .safety-tips { padding-left: 22px; display: grid; gap: 8px; line-height: 1.55; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 6px 16px; }
 .footer-links a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
+.share-button { position: relative; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.share-options { display: inline-flex; gap: 8px; }
+.share-options a, .share-options button { min-height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid var(--line); background: var(--white); color: var(--ink); font: inherit; font-size: 13px; text-decoration: none; cursor: pointer; }
+.table-scroll { overflow-x: auto; margin-top: 16px; }
+.metrics-table { border-collapse: collapse; min-width: 720px; width: 100%; font-size: 13px; }
+.metrics-table th, .metrics-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right; }
+.metrics-table th:first-child { text-align: left; white-space: nowrap; }

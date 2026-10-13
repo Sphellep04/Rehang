@@ -590,9 +590,9 @@ Each milestone should end with something usable on a phone.
 
 - [x] Policies published at `/terms`, `/privacy`, `/seller-rules`, `/buyer-protection`, `/prohibited-items` (from `docs/policies`; still needs a lawyer's review), plus a `/safe-spots` page
 - [ ] [Security checklist](docs/engineering/security-and-backups.md#pre-pilot-security-checklist) complete
-- [ ] Analytics dashboards ([events](docs/engineering/analytics-events.md))
+- [x] Analytics: first-party `track_event` (allowlisted, throttled, no personal data) and a moderator page at `/admin/metrics` with the north star (completed orders with no dispute). Funnel events beyond shares and installs are counted from the order, listing and dispute tables; see [events](docs/engineering/analytics-events.md)
 - [x] Waiting list (`/join`) and invite codes (admin creates or emails them; `signup_requires_invite` makes sign-up invite-only, enforced in the database)
-- [ ] Share links with preview images
+- [x] Share links with preview images: Share button (phone share sheet, WhatsApp, copy link) on items and shops, Open Graph and Twitter tags, a text card when a page has no photo. Unverified in real WhatsApp or Facebook until deployed
 - [ ] [Pilot launch checklist](docs/operations/launch-checklist.md) done
 
 #### M7: Held payments (March 2027, during the pilot, behind a feature flag)

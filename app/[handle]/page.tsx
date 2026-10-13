@@ -15,6 +15,8 @@ import { ReportButton } from "../_components/report-button";
 import { ListingCard } from "../_components/listing-card";
 import { SiteHeader } from "../_components/site-header";
 import { Stars } from "../_components/stars";
+import { ShareButton } from "../_components/share-button";
+import { shareText, siteUrl } from "@/lib/site";
 
 const HANDLE_PATTERN = /^[a-z0-9_]{3,20}$/;
 
@@ -37,6 +39,13 @@ export async function generateMetadata({ params }: PageProps<"/[handle]">): Prom
   return {
     title: `${name} (@${handle}) | Rehang`,
     description: (shop.profile.bio as string | null) || `Second-hand clothes from ${name} on Rehang.`,
+    alternates: { canonical: `/${handle}` },
+    openGraph: {
+      title: `${name} on Rehang`,
+      description: (shop.profile.bio as string | null) || `Second-hand clothes from ${name} on Rehang.`,
+      url: `/${handle}`,
+      ...(shop.profile.photo_url ? { images: [{ url: shop.profile.photo_url as string, alt: `${name}'s profile photo` }] } : {}),
+    },
   };
 }
 
@@ -114,6 +123,7 @@ async function ShopContent({ params }: { params: PageProps<"/[handle]">["params"
           </dl>
         </div>
         <div className="shop-actions">
+          <ShareButton url={`${siteUrl()}/${handle}`} text={shareText("shop", name)} object="shop" />
           {isOwner
             ? <Link className="button button-outline" href="/sell">Add a listing</Link>
             : (

@@ -1,5 +1,7 @@
 # Analytics events
 
+**As built:** Rehang does not use an external analytics tool yet. The table `analytics_events` stores only `share_clicked`, `pwa_installed`, `install_prompt_shown` and `shared_link_opened`, through the `track_event` function (property keys `channel`, `object`, `surface` only; at most 60 events an hour per person and 5,000 an hour for the site). Everything else below is counted straight from the orders, listings, disputes, reports and waiting list tables by `weekly_metrics()`, shown at `/admin/metrics`. A product analytics tool can be added later for page-level funnels.
+
 These events measure the funnels and north-star metric in README section 16. Use one product analytics tool (for example PostHog, which has a free tier) and keep event names in `snake_case`, in the form object then action.
 
 Don't send personal data (names, phone numbers, message text) as event properties. Use the user's `id` only.
