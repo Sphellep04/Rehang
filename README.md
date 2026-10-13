@@ -577,6 +577,7 @@ Each milestone should end with something usable on a phone.
 #### M5: Trust and moderation (February 2027)
 
 - [ ] Report and block on listings, users and messages. Done: report listings and people, block people. Still to do: report and block from inside chat
+- [x] Account page with data download and account deletion (`/account`; personal details erased, order records kept for the other party)
 - [ ] Admin dashboard: verifications, reports, order problems, flags, brand checks, freeze or suspend. Done: `/admin` queue for reports, ID checks and orders under review, with remove, restrict and suspend. Still to do: flags, brand checks, resolving disputed orders
 - [ ] Moderator action log. Two-factor login for moderators. Done: action log. Still to do: two-factor login
 - [ ] Scam signal flags ([list](docs/operations/moderator-guide.md#scam-signals))

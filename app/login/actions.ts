@@ -34,7 +34,11 @@ export async function signIn(_previous: AuthState, formData: FormData): Promise<
     return { status: "error", message: unconfirmed ? "Please confirm your email first. We sent you a link when you signed up." : "That email and password don't match." };
   }
 
-  const { data: profile } = await supabase.from("users").select("terms_accepted_at").eq("id", data.user.id).maybeSingle();
+  const { data: profile } = await supabase.from("users").select("terms_accepted_at,status").eq("id", data.user.id).maybeSingle();
+  if (profile?.status === "deleted") {
+    await supabase.auth.signOut();
+    return { status: "error", message: "That email and password don't match." };
+  }
   if (!profile?.terms_accepted_at) redirect("/onboarding");
   redirect(safeNext(formData.get("next")));
 }

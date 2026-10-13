@@ -8,6 +8,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getViewerId } from "@/lib/supabase/viewer";
 import { PageLoading } from "../_components/page-loading";
 import { SiteHeader } from "../_components/site-header";
+import { DeleteForm } from "./delete-form";
 import { PhotoForm } from "./photo-form";
 
 export const metadata: Metadata = { title: "Your account | Rehang" };
@@ -44,6 +45,12 @@ async function AccountContent() {
           <div><dt>Your shop</dt><dd><Link href={`/${me.handle as string}`}>rehang.na/{me.handle as string}</Link></dd></div>
         </dl>
         <PhotoForm userId={viewerId} currentUrl={me.photo_url as string | null} name={me.display_name as string} />
+        <div className="order-form">
+          <h3>Your data</h3>
+          <p className="trade-hint">Download a copy of everything we hold about you: your profile, listings, offers, orders, reviews and messages you sent.</p>
+          <a className="button button-outline" href="/account/export" download>Download my data</a>
+        </div>
+        <DeleteForm />
       </section>
     </main>
   );

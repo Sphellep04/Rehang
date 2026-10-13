@@ -519,3 +519,7 @@ a.plain-button:hover { color: var(--coral-dark); }
 .photo-form-row { display: flex; align-items: center; gap: 16px; }
 .photo-form-avatar { width: 72px; height: 72px; flex: none; }
 .photo-form-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+.photo-form, .order-form + .order-form, .order-facts + .order-form { margin-top: 18px; }
+.danger-zone { margin-top: 18px; border-color: #e3b9ab; }
+.danger-zone .button { justify-self: start; }
