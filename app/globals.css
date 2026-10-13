@@ -576,3 +576,17 @@ a.plain-button:hover { color: var(--coral-dark); }
 .admin-chat li { padding: 8px 10px; background: #fdfbf7; border-left: 3px solid #e0d7ca; }
 .admin-chat li[data-reported="true"] { border-left-color: var(--coral); background: #fff4ef; }
 .admin-chat p { margin: 2px 0 0; }
+
+/* Policy pages rendered from docs/policies */
+.policy-body h2 { margin: 28px 0 8px; font-size: 20px; }
+.policy-body h3 { margin: 20px 0 6px; font-size: 16px; }
+.policy-body p, .policy-body li { line-height: 1.6; }
+.policy-body ul, .policy-body ol { padding-left: 22px; }
+.policy-body table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; display: block; overflow-x: auto; }
+.policy-body th, .policy-body td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid #e0d7ca; }
+.policy-body blockquote { margin: 14px 0; padding: 8px 14px; border-left: 3px solid var(--coral); background: #fff4ef; }
+.policy-body a, .policy-links a { color: var(--coral-dark); text-decoration: underline; text-underline-offset: 2px; }
+.policy-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 32px; padding-top: 16px; border-top: 1px solid #e0d7ca; }
+.safety-tips { padding-left: 22px; display: grid; gap: 8px; line-height: 1.55; }
+.footer-links { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.footer-links a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }

@@ -13,7 +13,7 @@ Rehang is an online platform that connects people in Namibia who want to sell an
 - One person may have only one account. Business shops will come later under separate terms.
 
 ## 3. Your account
-- You log in with your phone number and a one-time code. Keep your phone secure. You are responsible for activity on your account.
+- You sign in with your email address and a password. Keep them private. You are responsible for activity on your account.
 - We may ask you to verify your identity (see our [privacy policy](privacy-policy.md) for how we handle ID documents).
 - We may limit, suspend or close accounts that break these terms, the [seller rules](seller-rules.md) or the [prohibited items](prohibited-items.md) list.
 
