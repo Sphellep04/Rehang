@@ -423,3 +423,52 @@ a.plain-button:hover { color: var(--coral-dark); }
 }
 
 .page-loading { min-height: 50vh; display: grid; place-items: center; color: var(--muted); font-size: 12px; }
+
+/* Offers, orders and notifications */
+.trade-panel { display: grid; gap: 12px; margin-top: 18px; }
+.trade-buy { width: 100%; min-height: 46px; }
+.trade-hint { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.trade-hint a, .trade-success a { color: var(--coral-dark); text-decoration: underline; text-underline-offset: 3px; }
+.trade-success { margin: 0; padding: 10px 12px; border: 1px solid #b9d9c6; background: #eef7f1; color: #1f6a41; font-size: 11px; line-height: 1.5; }
+.offer-form { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.offer-form label, .order-form label { font-size: 10px; font-weight: 700; }
+.offer-row { display: flex; align-items: center; gap: 8px; }
+.offer-row input, .order-form input, .order-form select { min-height: 42px; padding: 0 10px; border: 1px solid #b9afa1; background: var(--white); color: var(--ink); }
+.offer-row input { flex: 1; min-width: 0; }
+.list-heading { margin: 30px 0 10px; font-family: Georgia, "Times New Roman", serif; font-size: 20px; font-weight: 400; }
+.list-cards { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.list-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; border: 1px solid var(--line); background: var(--white); }
+.list-card-unread { border-left: 3px solid var(--coral); }
+.list-card-main { display: grid; gap: 4px; min-width: 0; }
+.list-card-main p { margin: 0; font-size: 11px; }
+.list-card-main small { color: var(--muted); font-size: 10px; }
+.offer-actions { display: grid; gap: 8px; justify-items: end; }
+.offer-buttons { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.order-page { max-width: 760px; }
+.order-eyebrow { margin-top: 20px; }
+.order-summary { margin: 10px 0 18px; font-size: 12px; }
+.status-pill { padding: 3px 8px; border: 1px solid var(--line); background: var(--white); font-size: 10px; font-weight: 700; }
+.status-completed { border-color: #b9d9c6; color: #1f6a41; }
+.status-cancelled { color: var(--muted); }
+.order-facts { display: grid; gap: 10px; margin: 18px 0; padding: 14px 16px; border: 1px solid var(--line); background: var(--white); }
+.order-facts div { display: grid; grid-template-columns: 90px 1fr; gap: 12px; font-size: 11px; }
+.order-facts dt { color: var(--muted); }
+.order-facts dd { margin: 0; }
+.meetup-code { display: grid; gap: 6px; margin: 18px 0; padding: 18px; border: 2px dashed var(--coral); background: var(--white); text-align: center; }
+.meetup-code p { margin: 0; font-size: 11px; font-weight: 700; }
+.meetup-code strong { font-family: Georgia, "Times New Roman", serif; font-size: 40px; letter-spacing: .25em; }
+.meetup-code small { color: var(--muted); font-size: 10px; line-height: 1.5; }
+.order-actions { display: grid; gap: 14px; margin: 18px 0; }
+.order-form { display: grid; gap: 8px; padding: 16px; border: 1px solid var(--line); background: var(--white); }
+.order-form h3 { margin: 0 0 4px; font-family: Georgia, "Times New Roman", serif; font-size: 18px; font-weight: 400; }
+.order-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.order-form-row > div { display: grid; gap: 6px; }
+.order-cancel { display: flex; flex-wrap: wrap; gap: 16px; padding-top: 8px; color: var(--muted); }
+.order-cancel .plain-button { text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 640px) {
+  .list-card { flex-direction: column; align-items: stretch; }
+  .offer-actions, .offer-buttons { justify-items: stretch; justify-content: flex-start; }
+  .order-facts div { grid-template-columns: 1fr; gap: 2px; }
+  .order-form-row { grid-template-columns: 1fr; }
+  .header-actions { flex-wrap: wrap; }
+}

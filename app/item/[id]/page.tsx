@@ -13,6 +13,7 @@ import { FollowButton } from "../../_components/follow-button";
 import { ListingCard } from "../../_components/listing-card";
 import { MessageSellerButton } from "../../_components/message-seller-button";
 import { SaveButton } from "../../_components/save-button";
+import { TradePanel } from "../../_components/trade-panel";
 import { SiteHeader } from "../../_components/site-header";
 
 export async function generateMetadata({ params }: PageProps<"/item/[id]">): Promise<Metadata> {
@@ -47,14 +48,16 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
   const signedIn = viewerId !== null;
   const isOwner = viewerId === listing.sellerId;
 
-  const [favouriteCount, saved, followResult, more] = await Promise.all([
+  const [favouriteCount, saved, followResult, more, offerConfig] = await Promise.all([
     supabase.rpc("item_favourite_count", { p_item: listing.id }),
     signedIn ? savedIdsFor(supabase, [listing.id]) : Promise.resolve(new Set<string>()),
     signedIn && !isOwner
       ? supabase.from("follows").select("seller_id").eq("seller_id", listing.sellerId).maybeSingle()
       : Promise.resolve({ data: null }),
     listingsForSeller(supabase, listing.sellerId, "active"),
+    supabase.from("app_config").select("value").eq("key", "minimum_offer_percent").maybeSingle(),
   ]);
+  const minimumPercent = Number(offerConfig.data?.value ?? 60) || 60;
 
   const others = more.filter((candidate) => candidate.id !== listing.id).slice(0, 3);
   const otherSaved = signedIn ? await savedIdsFor(supabase, others.map((candidate) => candidate.id)) : new Set<string>();
@@ -82,6 +85,8 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
           <p className="item-price">{formatPrice(listing.price)}</p>
           <p className="item-meta">{listing.condition} condition · {listing.town}</p>
           {listing.description && <p className="item-description">{listing.description}</p>}
+
+          {available && !isOwner && <TradePanel itemId={listing.id} price={listing.price} signedIn={signedIn} minimumPercent={minimumPercent} />}
 
           <div className="item-actions">
             {available && !isOwner && <MessageSellerButton itemId={listing.id} sellerId={listing.sellerId} />}

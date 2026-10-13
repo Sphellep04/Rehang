@@ -21,7 +21,14 @@ export function SiteHeader({ signedIn, query = "" }: { signedIn: boolean; query?
       <nav className="header-actions" aria-label="Main navigation">
         <Link className="plain-button" href="/browse">Browse</Link>
         <Link className="plain-button" href={signedIn ? "/saved" : "/login"}>♡ Saved</Link>
-        {signedIn ? <Link className="plain-button" href="/inbox">Messages</Link> : <Link className="plain-button" href="/login">Sign in</Link>}
+        {signedIn ? (
+          <>
+            <Link className="plain-button" href="/inbox">Messages</Link>
+            <Link className="plain-button" href="/offers">Offers</Link>
+            <Link className="plain-button" href="/orders">Orders</Link>
+            <Link className="plain-button" href="/notifications" aria-label="Notifications">Updates</Link>
+          </>
+        ) : <Link className="plain-button" href="/login">Sign in</Link>}
         <Link className="button button-coral" href="/sell">Sell an item <span>+</span></Link>
       </nav>
     </header>

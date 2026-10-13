@@ -561,16 +561,16 @@ Each milestone should end with something usable on a phone.
 
 - [x] Realtime chat per item with participant-only RLS, realtime updates, and block
 - [x] Server-side phone-number and social-handle detection with in-chat warnings and message flags
-- [ ] Offers: make, accept, counter, decline, expire (24h), 60% minimum
+- [x] Offers: make, accept, counter, decline, withdraw, expire (24h), 60% minimum (`/offers`; expiry runs in `process_order_timers`, which still needs scheduling)
 - [ ] New-listing daily digest for followers
 - [ ] SMS for critical events ([notification table](docs/product/orders-meetups-and-delivery.md#notifications))
 
 #### M4: Meet-up orders (late January – early February 2027)
 
-- [ ] Order from an accepted offer or buy-now. Item reserved
-- [ ] Meet-up spots and time slots. Seller confirmation within 24h
-- [ ] Meet-up code: buyer-only display, validity window, lockout after 5 attempts
-- [ ] Timers, cancellations, "they didn't show", strikes ladder
+- [x] Order from an accepted offer or buy-now. Item reserved (`/orders`)
+- [ ] Meet-up spots and time slots. Seller confirmation within 24h. Done: propose, confirm and hours checks. Still to do: confirm the real spot addresses and activate them (seeded spots are inactive)
+- [x] Meet-up code: buyer-only display, validity window, lockout after 5 attempts
+- [ ] Timers, cancellations, "they didn't show", strikes ladder. Done in SQL and the order page. Still to do: schedule `process_order_timers` (pg_cron or a scheduled Edge Function)
 - [ ] Reviews from both sides after completion
 - [ ] "Report a problem" on orders
 
