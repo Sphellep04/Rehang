@@ -1055,3 +1055,8 @@ Searched on 29 September 2026. Figures for costs, fees and targets in this plan 
 - PayAtlas: accepting payments in Namibia
 
 ---
+
+
+## Checks and launch
+
+`npm run lint`, `npm run typecheck`, `npm test` (unit tests) and `npm run build` run in GitHub Actions on every pull request, alongside the database tests (`supabase test db`). The launch steps that need your accounts are in [docs/operations/staging-runbook.md](docs/operations/staging-runbook.md). The site is installable as a PWA and shows an offline page without a connection. It deliberately does not cache pages or account data.
