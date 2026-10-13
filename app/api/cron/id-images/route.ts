@@ -1,15 +1,6 @@
 import { connection, NextResponse, type NextRequest } from "next/server";
-import { timingSafeEqual } from "node:crypto";
+import { cronAuthorised } from "@/lib/cron";
 import { createClient } from "@supabase/supabase-js";
-
-function authorised(request: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  const header = request.headers.get("authorization") ?? "";
-  if (!secret || secret.length < 24) return false;
-  const expected = Buffer.from(`Bearer ${secret}`);
-  const actual = Buffer.from(header);
-  return actual.length === expected.length && timingSafeEqual(actual, expected);
-}
 
 /**
  * Deletes ID photos 7 days after a decision. Runs daily (see vercel.json). Vercel sends
@@ -17,7 +8,7 @@ function authorised(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   await connection();
-  if (!authorised(request)) return NextResponse.json({ error: "unauthorised" }, { status: 401 });
+  if (!cronAuthorised(request)) return NextResponse.json({ error: "unauthorised" }, { status: 401 });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

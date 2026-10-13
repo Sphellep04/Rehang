@@ -31,6 +31,7 @@ function describe(kind: string, payload: Record<string, unknown>): Note {
     case "order_created": return { text: "A new order is waiting. Arrange where and when to meet.", href: order };
     case "meetup_requested": return { text: "A buyer suggested a meet-up. Please confirm or message them.", href: order };
     case "meetup_confirmed": return { text: "Your meet-up is confirmed. Your code is ready on the order page.", href: order };
+    case "meetup_reminder": return { text: `Reminder: your meet-up is at ${typeof payload.meetup_at === "string" ? formatWindhoek(payload.meetup_at) : "soon"}.`, href: order };
     case "order_completed": return { text: "An order was completed.", href: order };
     case "order_cancelled": return { text: "An order was cancelled.", href: order };
     case "cancel_agreement_requested": return { text: "The other person asked to cancel an order together.", href: order };

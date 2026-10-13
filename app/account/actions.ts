@@ -29,3 +29,18 @@ export async function deleteAccount(_previous: DeleteState, formData: FormData):
   await supabase.auth.signOut();
   redirect("/");
 }
+
+export type EmailPrefsState = { message?: string; ok?: boolean };
+
+export async function saveEmailPreferences(_previous: EmailPrefsState, formData: FormData): Promise<EmailPrefsState> {
+  if (!isSupabaseConfigured()) return { message: "Settings are not available yet." };
+  const viewerId = await getViewerId();
+  if (!viewerId) redirect("/login");
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_email_preferences", {
+    p_alerts: formData.get("alerts") === "on",
+    p_digest: formData.get("digest") === "on",
+  });
+  if (error) return { message: tradeError(error.message) };
+  return { ok: true, message: "Saved." };
+}

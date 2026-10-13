@@ -146,7 +146,7 @@ The MVP does five things well: **sign up and verify, list fast, browse and filte
 
 | Area | Feature | Detail | Spec |
 |---|---|---|---|
-| Accounts | Phone number login with one-time code | Namibian numbers first (+264), no password to forget | [Verification](docs/product/verification-and-limits.md) |
+| Accounts | Email and password sign-in with emailed confirmation and easy password reset | No SMS cost, no phone numbers collected | [Verification](docs/product/verification-and-limits.md) |
 | Accounts | Profile and shop page | Photo, town, bio, shareable link such as `rehang.com.na/thandi` | |
 | Accounts | ID verification | ID plus live selfie, reviewed by hand. Listings go live on approval | [Verification](docs/product/verification-and-limits.md) |
 | Listing | Guided photo flow | Prompts for front, back, label, flaw. Blocks blurry, duplicate or contact-info images | [Listing standards](docs/product/listing-standards.md#photo-rules) |
@@ -200,8 +200,8 @@ Trust is the product. Rehang uses three layers: **verify the person, verify the 
 
 | Level | How | Unlocks | Limits (starting values) |
 |---|---|---|---|
-| Level 0 | Phone number and one-time code | Browse, favourite, follow, message | 5 new conversations a day |
-| Level 1 | Email plus profile photo | Buy | N$1,000 per order, N$2,000 per 30 days |
+| Level 0 | Email address, not yet confirmed | Browse, favourite, follow, message | 5 new conversations a day |
+| Level 1 | Email confirmed | Buy | N$1,000 per order, N$2,000 per 30 days |
 | Level 2 | Namibian ID or passport photo plus a live selfie match | Sell, and buy with no limit | First 30 days: at most 30 active listings, and brand check over N$1,500 |
 | Trusted seller | 10 completed sales, rating 4.5 or higher, no upheld disputes, account 60+ days old | Badge, search priority, higher payout limits | Lost if the rating drops below 4.3 or a dispute is upheld |
 
@@ -562,7 +562,7 @@ Each milestone should end with something usable on a phone.
 - [x] Realtime chat per item with participant-only RLS, realtime updates, and block
 - [x] Server-side phone-number and social-handle detection with in-chat warnings and message flags
 - [x] Offers: make, accept, counter, decline, withdraw, expire (24h), 60% minimum (`/offers`; expiry runs in `process_order_timers`, scheduled every 5 minutes with pg_cron when the extension is enabled)
-- [ ] New-listing daily digest for followers
+- [x] New-listing daily digest for followers, plus emailed offer, order, meet-up reminder and price-drop alerts with opt-outs at `/account` (needs `RESEND_API_KEY`, `EMAIL_FROM`, `NEXT_PUBLIC_SITE_URL`). Vercel Hobby crons run once a day, so alerts arrive in a daily batch. For near-real-time email, call `/api/cron/emails` every few minutes from Supabase `pg_cron` with `pg_net`, or from an external pinger, sending `Authorization: Bearer $CRON_SECRET`
 - [ ] SMS for critical events ([notification table](docs/product/orders-meetups-and-delivery.md#notifications))
 
 #### M4: Meet-up orders (late January – early February 2027)
