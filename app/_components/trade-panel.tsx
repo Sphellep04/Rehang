@@ -17,7 +17,7 @@ export function TradePanel({ itemId, price, signedIn, minimumPercent = 60 }: Pro
   const minimum = Math.ceil((price * minimumPercent) / 100);
 
   async function buyNow() {
-    if (!signedIn) return router.push("/login");
+    if (!signedIn) return router.push(`/login?next=${encodeURIComponent(window.location.pathname)}`);
     setBusy("buy");
     setError("");
     const supabase = createClient();
@@ -29,7 +29,7 @@ export function TradePanel({ itemId, price, signedIn, minimumPercent = 60 }: Pro
 
   async function sendOffer(event: React.FormEvent) {
     event.preventDefault();
-    if (!signedIn) return router.push("/login");
+    if (!signedIn) return router.push(`/login?next=${encodeURIComponent(window.location.pathname)}`);
     const cents = dollarsToCents(amount);
     if (cents === null) return setError("Enter a whole dollar amount.");
     setBusy("offer");

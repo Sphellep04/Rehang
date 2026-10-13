@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { loginHref } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
 import { reportReasons } from "@/lib/moderation";
 import { tradeError } from "@/lib/trade";
@@ -38,7 +39,7 @@ export function ReportButton({ targetType, targetId, signedIn, label = "Report" 
   return (
     <div className="report-box">
       {!open ? (
-        <button className="plain-button report-link" type="button" onClick={() => (signedIn ? setOpen(true) : router.push("/login"))}>⚑ {label}</button>
+        <button className="plain-button report-link" type="button" onClick={() => (signedIn ? setOpen(true) : router.push(loginHref()))}>⚑ {label}</button>
       ) : (
         <form className="order-form" onSubmit={(event) => void submit(event)}>
           <h3>What is wrong?</h3>

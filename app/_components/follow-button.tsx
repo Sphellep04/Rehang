@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { loginHref } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
 
 type Props = { sellerId: string; sellerName: string; initialFollowing: boolean; signedIn: boolean };
@@ -14,7 +15,7 @@ export function FollowButton({ sellerId, sellerName, initialFollowing, signedIn 
 
   function toggle() {
     if (!signedIn) {
-      router.push("/login");
+      router.push(loginHref());
       return;
     }
 

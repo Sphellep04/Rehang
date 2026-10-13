@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { tradeError } from "@/lib/trade";
 
 type CategoryOption = { id: number; name: string };
 type SizeOption = { id: number; system: string; value: string };
@@ -72,6 +74,7 @@ export function ListingForm({
   const [photos, setPhotos] = useState<PhotoSelection[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [message, setMessage] = useState("");
+  const [needsId, setNeedsId] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   function selectPhotos(kind: PhotoKind, files: FileList | null, multiple: boolean) {
@@ -96,6 +99,7 @@ export function ListingForm({
     event.preventDefault();
     const formElement = event.currentTarget;
     setMessage("");
+    setNeedsId(false);
     const formData = new FormData(formElement);
     const title = String(formData.get("title") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
@@ -182,9 +186,15 @@ export function ListingForm({
       const { error: photoError } = await supabase.from("item_photos").insert(photoRows);
       if (photoError) throw new Error("Your item draft was saved, but its photos were not attached. Please try saving again.");
 
-      setMessage(verificationLevel === "level2"
-        ? "Draft saved. You can review it before it goes live."
-        : "Draft saved. It will stay private until your seller verification is approved.");
+      const { data: published, error: publishError } = await supabase.rpc("publish_item", { p_item: item.id });
+      if (publishError) {
+        setMessage(`Saved as a draft. ${tradeError(publishError.message)}`);
+        return;
+      }
+      setMessage(published === "active"
+        ? "Your listing is live."
+        : "Saved. Your listing goes live as soon as your ID is verified. Verify your ID to speed this up.");
+      setNeedsId(published !== "active");
       formElement.reset();
       setPhotos([]);
       setSelectedColors([]);
@@ -222,8 +232,8 @@ export function ListingForm({
         })}</div>
       </section>
 
-      <p className="listing-save-note" role="status" aria-live="polite">{message}</p>
-      <div className="listing-submit-row"><p>New items save privately as drafts. Publishing requires seller verification.</p><button className="button button-ink" type="submit" disabled={isSaving}>{isSaving ? "Saving draft…" : "Save draft"}</button></div>
+      <p className="listing-save-note" role="status" aria-live="polite">{message}{needsId && <> <Link href="/verify">Verify my ID</Link></>}</p>
+      <div className="listing-submit-row"><p>{verificationLevel === "level2" ? "You are verified, so your listing goes live straight away." : "Only ID-verified sellers go live straight away. Yours will be published automatically once your ID is approved."}</p><button className="button button-ink" type="submit" disabled={isSaving}>{isSaving ? "Publishing…" : "Publish listing"}</button></div>
     </form>
   );
 }

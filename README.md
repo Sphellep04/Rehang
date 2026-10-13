@@ -349,7 +349,7 @@ Build a **mobile-first web app (PWA) on Next.js and Supabase** first. It is the 
 |---|---|---|
 | Front end | Next.js (React, TypeScript) with Tailwind CSS, installable as a PWA | One codebase, works on any phone browser, no app store wait |
 | Back end and database | Supabase (Postgres, Auth, Storage, Realtime, Row Level Security) | Login, database, images, chat and access rules in one place |
-| Phone login | One-time codes by SMS through a provider covering MTC and TN Mobile numbers | Simple sign-up, no passwords |
+| Email login | Email and password, with an emailed confirmation link and password reset | No per-message SMS cost, easy password recovery. Decision of 13 Oct 2026, replacing phone codes |
 | Images | Compressed in the browser, stored as WebP in three sizes | Saves data for users and storage cost |
 | Search | Postgres full-text search and filters | Enough for thousands of listings. Add a search service later |
 | Scheduled jobs | `pg_cron` or scheduled functions | Order timers, trusted-seller updates, ID image deletion |
@@ -371,7 +371,7 @@ flowchart TB
         PAY[Payment webhooks<br/>& server actions]
     end
     subgraph Supabase
-        AUTH[Auth<br/>phone OTP]
+        AUTH[Auth<br/>email + password]
         DB[(Postgres<br/>+ RLS + full-text search)]
         CRON[pg_cron<br/>timers & cleanup]
         PUB[Storage: public<br/>item photos]
@@ -436,7 +436,7 @@ Key rules: money is stored as **integer cents**, every table has **RLS**, orders
 
 - Row Level Security on every table, **tested in CI** with pgTAP.
 - ID images in a private bucket with links that expire after 5 minutes. Deleted after the retention period. Never backed up.
-- Rate limits on OTP, sign-up, messages, listings and reports.
+- Rate limits on sign-in, sign-up, messages, listings and reports.
 - Never store card details. Phone numbers are never shown to other users. EXIF location data is stripped from photos.
 - Two-factor login for moderator and admin accounts.
 
@@ -453,7 +453,7 @@ Nothing is scaffolded yet. At milestone M0:
 ```text
 rehang/
 ├── app/                    # Next.js App Router
-│   ├── (auth)/             # login, OTP, onboarding
+│   ├── (auth)/             # login, signup, password reset, onboarding
 │   ├── (shop)/             # feed, search, item page, seller shop [handle]
 │   ├── sell/               # guided photo flow, closet clear-out mode
 │   ├── inbox/              # chat and offers
@@ -484,7 +484,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. Run `npm run lint` and `npm run build` before sharing changes. With Supabase configured, the home feed reads active listings under RLS; without it, the clearly labeled example catalog is shown. Phone OTP requires a configured Supabase SMS provider. Seller drafts compress photos into three WebP sizes. The inbox supports participant-only realtime chat, blocking, and server-side contact-detail flags. Offers, orders, verification review, and moderation are still in progress.
+Open `http://localhost:3000`. Run `npm run lint` and `npm run build` before sharing changes. With Supabase configured, the home feed reads active listings under RLS; without it, the clearly labeled example catalog is shown. Email sign-in needs Supabase email confirmation switched on and, for real use, a custom SMTP sender (Supabase's built-in sender allows only a few emails an hour). Seller drafts compress photos into three WebP sizes. The inbox supports participant-only realtime chat, blocking, and server-side contact-detail flags. Offers, orders, verification review, and moderation are still in progress.
 
 Copy `.env.example` to `.env.local` and fill in the local Supabase URL and publishable key printed by `npx supabase status`. Never put a service-role key in a `NEXT_PUBLIC_` variable or in browser code.
 
@@ -536,10 +536,10 @@ Each milestone should end with something usable on a phone.
 
 #### M1: Accounts and verification (November 2026)
 
-- [x] Implement +264 phone OTP actions and sign-in UI with Supabase SSR session handling (SMS provider still needs confirmation for MTC and TN Mobile)
+- [x] Email and password sign-in, sign-up, confirmation link and password reset with Supabase SSR session handling (replaces phone OTP)
 - [x] Add profile creation on signup and profile completion with name, handle, town and draft terms consent
-- [ ] Confirm end-to-end OTP delivery with an SMS provider for MTC and TN Mobile
-- [ ] Add profile photo and Level 1 email verification
+- [ ] Connect a custom SMTP sender and test confirmation and reset emails end to end
+- [ ] Add profile photo. Done: Level 1 is granted when the email is confirmed
 - [x] Profile and public shop page at `/[handle]`
 - [ ] ID plus live selfie upload to the private bucket (Level 2), and the ID number hash check. Done: upload, review and approval at `/verify` and `/admin`. Still to do: the ID number hash check
 - [ ] `verification_level` gating in RLS and in the UI. Limits read from `app_config`
@@ -551,7 +551,7 @@ Each milestone should end with something usable on a phone.
 - [x] Single-item listing form with browser WebP compression in three sizes and EXIF removal
 - [ ] Blur, duplicate-photo (perceptual hash) and contact-info checks
 - [x] Item details form with validation, condition-specific photo checks, and private draft save
-- [ ] Closet clear-out mode with offline drafts. "Waiting for verification" status and auto-publish on approval
+- [ ] Closet clear-out mode with offline drafts. Done: "Waiting for verification" status and auto-publish on ID approval
 - [x] Feed reads active listings from Supabase when configured; example catalog remains for local preview
 - [ ] Full-text search and filters. Done: prefix search, category, size group, condition, price, sort. Still to do: brand and town filters
 - [x] Favourites and follow seller (saved list at `/saved`, follower counts on shop pages)

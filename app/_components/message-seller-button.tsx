@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { loginHref } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
 
 type Props = { itemId: string; sellerId: string };
@@ -20,7 +21,7 @@ export function MessageSellerButton({ itemId, sellerId }: Props) {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        router.push("/login");
+        router.push(loginHref());
         return;
       }
 

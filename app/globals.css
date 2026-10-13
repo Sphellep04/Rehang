@@ -484,3 +484,10 @@ a.plain-button:hover { color: var(--coral-dark); }
 .admin-actions input { min-height: 38px; padding: 0 10px; border: 1px solid #b9afa1; background: var(--white); color: var(--ink); }
 .admin-quote { color: var(--muted); font-style: italic; }
 .list-card-main a { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Email sign-in */
+.auth-links { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin: 6px 0 0; font-size: 11px; }
+.auth-links a { color: var(--coral-dark); text-decoration: underline; text-underline-offset: 3px; }
+.auth-hint { color: var(--muted); font-size: 10px; margin-top: -4px; }
+.header-signout { padding: 0; border: 0; background: transparent; cursor: pointer; }
+.listing-save-note a { color: var(--coral-dark); text-decoration: underline; text-underline-offset: 3px; }

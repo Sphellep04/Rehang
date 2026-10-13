@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { loginHref } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
 
 type Props = { userId: string; name: string; initialBlocked: boolean; signedIn: boolean };
@@ -13,7 +14,7 @@ export function BlockButton({ userId, name, initialBlocked, signedIn }: Props) {
   const [error, setError] = useState("");
 
   async function toggle() {
-    if (!signedIn) return router.push("/login");
+    if (!signedIn) return router.push(loginHref());
     if (!blocked && !window.confirm(`Block ${name}? You will no longer see each other's listings or messages.`)) return;
     setBusy(true);
     setError("");

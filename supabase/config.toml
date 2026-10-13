@@ -25,6 +25,23 @@ additional_redirect_urls = ["http://localhost:3000"]
 enable_signup = true
 jwt_expiry = 3600
 
+minimum_password_length = 10
+password_requirements = "letters_digits"
+
+# Sign-in is by email and password. SMS is switched off so there is no per-message cost.
 [auth.sms]
+enable_signup = false
+
+[auth.email]
 enable_signup = true
-otp_expiry = 600
+double_confirm_changes = true
+enable_confirmations = true
+max_frequency = "60s"
+
+[auth.email.template.confirmation]
+subject = "Confirm your Rehang email"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your Rehang password"
+content_path = "./supabase/templates/recovery.html"

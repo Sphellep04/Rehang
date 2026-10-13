@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { loginHref } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
 
 type Props = {
@@ -20,7 +21,7 @@ export function SaveButton({ itemId, title, initialSaved, signedIn, className = 
 
   function toggle() {
     if (!signedIn) {
-      router.push("/login");
+      router.push(loginHref());
       return;
     }
 

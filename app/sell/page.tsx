@@ -17,7 +17,7 @@ export default function SellPage() {
         <section className="auth-card sell-setup">
           <p className="eyebrow">SELL IN WINDHOEK</p>
           <h1>Set up Rehang first</h1>
-          <p>Phone sign-in and the local Supabase project must be configured before you can save a listing.</p>
+          <p>Email sign-in and the Supabase project must be configured before you can save a listing.</p>
           <Link className="button button-ink" href="/login">Go to sign in</Link>
         </section>
       </main>

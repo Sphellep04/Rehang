@@ -11,9 +11,9 @@ export default function PrivacyPage() {
         <h1>Privacy Policy</h1>
         <p className="policy-lede">This page summarizes the current Rehang privacy draft. It needs legal review, including confirmation of Namibian data-protection requirements, before the pilot.</p>
         <h2>Information we use</h2>
-        <p>Rehang uses your phone number for sign-in and account security. Your public profile can show your handle, display name, photo, town and bio. Listings, messages, offers, orders and reviews are used to operate the marketplace and resolve reports.</p>
+        <p>Rehang uses your email address for sign-in, account security and password resets. Your public profile can show your handle, display name, photo, town and bio. Listings, messages, offers, orders and reviews are used to operate the marketplace and resolve reports.</p>
         <h2>Private information</h2>
-        <p>Your phone number, legal name, email and identity documents are not shown to other users. ID images are intended to be stored privately, accessible only to moderators for verification, and deleted within 30 days of a decision, subject to legal review.</p>
+        <p>Your email, legal name and identity documents are not shown to other users. ID images are intended to be stored privately, accessible only to moderators for verification, and deleted within 30 days of a decision, subject to legal review.</p>
         <h2>Service providers</h2>
         <p>Rehang uses providers for hosting, database, SMS, error monitoring and analytics. If protected payments are introduced, a licensed payment partner will process them. Rehang does not store card numbers.</p>
         <h2>Your choices</h2>
