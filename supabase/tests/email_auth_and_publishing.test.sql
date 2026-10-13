@@ -66,7 +66,7 @@ reset role;
 -- Approval puts waiting listings live.
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '99999999-0000-0000-0000-000000000001', true);
-select public.submit_id_verification('99999999-0000-0000-0000-000000000001/id.jpg', '99999999-0000-0000-0000-000000000001/selfie.jpg');
+select public.submit_id_verification('99999999-0000-0000-0000-000000000001/id.jpg', '99999999-0000-0000-0000-000000000001/selfie.jpg', '6330836563308365633083656330836563308365633083656330836563308365', 'Test Person');
 select set_config('request.jwt.claim.sub', '99999999-0000-0000-0000-000000000004', true);
 select public.review_verification((select id from public.verifications limit 1), 'approve');
 select ok((select status = 'active' and published_at is not null from public.items where id = '88888888-0000-0000-0000-000000000001'), 'approving an ID publishes the seller''s waiting listings');

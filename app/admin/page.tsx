@@ -37,7 +37,7 @@ async function AdminContent() {
 
   const [reportsResult, verificationsResult, disputedResult, logResult] = await Promise.all([
     supabase.from("reports").select("id,reporter_id,target_type,target_id,reason,details,created_at").eq("status", "open").order("created_at").limit(50),
-    supabase.from("verifications").select("id,user_id,status,document_path,selfie_path,created_at").in("status", ["pending", "escalated"]).order("created_at").limit(50),
+    supabase.from("verifications").select("id,user_id,status,legal_name,document_path,selfie_path,created_at").in("status", ["pending", "escalated"]).order("created_at").limit(50),
     supabase.from("orders").select("id,item_id,buyer_id,seller_id,amount_cents,created_at").eq("status", "disputed").order("created_at").limit(50),
     supabase.from("moderator_actions").select("id,actor_id,action,target_type,target_id,note,created_at").order("created_at", { ascending: false }).limit(30),
   ]);
@@ -69,8 +69,8 @@ async function AdminContent() {
   // Short-lived links to the private ID photos. They expire in 10 minutes.
   const links = await Promise.all(verifications.map(async (v) => {
     const [doc, selfie] = await Promise.all([
-      supabase.storage.from("id-documents").createSignedUrl(v.document_path as string, 600),
-      supabase.storage.from("id-documents").createSignedUrl(v.selfie_path as string, 600),
+      v.document_path ? supabase.storage.from("id-documents").createSignedUrl(v.document_path as string, 600) : Promise.resolve({ data: null }),
+      v.selfie_path ? supabase.storage.from("id-documents").createSignedUrl(v.selfie_path as string, 600) : Promise.resolve({ data: null }),
     ]);
     return [v.id as string, { doc: doc.data?.signedUrl, selfie: selfie.data?.signedUrl }] as const;
   }));
@@ -115,6 +115,7 @@ async function AdminContent() {
               <li className="list-card admin-card" key={v.id as string}>
                 <div className="list-card-main">
                   <b>{who(v.user_id as string)}</b>
+                  <p>Name on ID: <b>{(v.legal_name as string | null) ?? "not given"}</b>. Check it matches the photo.</p>
                   <p>{files?.doc ? <a href={files.doc} target="_blank" rel="noreferrer">Open ID</a> : "ID unavailable"} · {files?.selfie ? <a href={files.selfie} target="_blank" rel="noreferrer">Open selfie</a> : "Selfie unavailable"}</p>
                   <small>{v.status === "escalated" ? "Escalated · " : ""}{formatWindhoek(v.created_at as string)}. Links expire in 10 minutes.</small>
                 </div>

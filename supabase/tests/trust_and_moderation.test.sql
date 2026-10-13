@@ -93,18 +93,18 @@ select ok(true, 'members cannot raise their own verification level');
 -- Verification submit.
 select set_config('request.jwt.claim.sub', 'dddddddd-0000-0000-0000-000000000004', true);
 do $$ begin
-  perform public.submit_id_verification('dddddddd-0000-0000-0000-000000000003/id.jpg', 'dddddddd-0000-0000-0000-000000000004/selfie.jpg');
+  perform public.submit_id_verification('dddddddd-0000-0000-0000-000000000003/id.jpg', 'dddddddd-0000-0000-0000-000000000004/selfie.jpg', '8146836981468369814683698146836981468369814683698146836981468369', 'Test Person');
   raise exception 'foreign path accepted';
 exception when others then
   if sqlerrm <> 'invalid_upload' then raise; end if;
 end $$;
 select ok(true, 'ID uploads must live in the person''s own folder');
 
-select ok((select public.submit_id_verification('dddddddd-0000-0000-0000-000000000004/id.jpg', 'dddddddd-0000-0000-0000-000000000004/selfie.jpg') is not null), 'a person can submit ID and selfie');
+select ok((select public.submit_id_verification('dddddddd-0000-0000-0000-000000000004/id.jpg', 'dddddddd-0000-0000-0000-000000000004/selfie.jpg', '0732549007325490073254900732549007325490073254900732549007325490', 'Test Person') is not null), 'a person can submit ID and selfie');
 select set_config('test.ver_id', (select id::text from public.verifications limit 1), true);
 
 do $$ begin
-  perform public.submit_id_verification('dddddddd-0000-0000-0000-000000000004/id2.jpg', 'dddddddd-0000-0000-0000-000000000004/selfie2.jpg');
+  perform public.submit_id_verification('dddddddd-0000-0000-0000-000000000004/id2.jpg', 'dddddddd-0000-0000-0000-000000000004/selfie2.jpg', '2644769726447697264476972644769726447697264476972644769726447697', 'Test Person');
   raise exception 'second pending accepted';
 exception when others then
   if sqlerrm <> 'verification_already_pending' then raise; end if;

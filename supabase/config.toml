@@ -38,6 +38,17 @@ double_confirm_changes = true
 enable_confirmations = true
 max_frequency = "60s"
 
+# Sending through Resend. Create a Resend API key, verify your sending domain, then set
+# RESEND_API_KEY in the environment (or paste the same values into Supabase, Authentication, SMTP).
+[auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(RESEND_API_KEY)"
+admin_email = "no-reply@your-domain.example"
+sender_name = "Rehang"
+
 [auth.email.template.confirmation]
 subject = "Confirm your Rehang email"
 content_path = "./supabase/templates/confirmation.html"

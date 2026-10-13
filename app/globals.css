@@ -491,3 +491,12 @@ a.plain-button:hover { color: var(--coral-dark); }
 .auth-hint { color: var(--muted); font-size: 10px; margin-top: -4px; }
 .header-signout { padding: 0; border: 0; background: transparent; cursor: pointer; }
 .listing-save-note a { color: var(--coral-dark); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Verification steps */
+.verify-steps { display: grid; gap: 8px; margin: 0 0 20px; padding: 0; list-style: none; }
+.verify-steps li { display: flex; gap: 10px; align-items: flex-start; font-size: 11px; line-height: 1.5; color: var(--muted); }
+.verify-steps li span { flex: none; width: 20px; height: 20px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--white); font-size: 10px; font-weight: 700; }
+.verify-steps li.done { color: var(--ink); }
+.verify-steps li.done span { border-color: #b9d9c6; background: #eef7f1; color: #1f6a41; }
+.verify-steps li.active { color: var(--ink); }
+.verify-steps li.active span { border-color: var(--coral); color: var(--coral-dark); }

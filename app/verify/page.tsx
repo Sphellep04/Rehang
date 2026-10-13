@@ -43,6 +43,11 @@ async function VerifyContent() {
         <h1 className="browse-title">Verify your <em>ID.</em></h1>
         <p className="order-summary">Verified people can buy and sell without order limits, and their listings show a verified badge.</p>
 
+        <ol className="verify-steps">
+          <li className="done"><span>✓</span> Email confirmed. You can buy up to the Level 1 limits.</li>
+          <li className={verified ? "done" : pending ? "active" : ""}><span>{verified ? "✓" : "2"}</span> ID and selfie checked by our team. Removes buying limits and lets your listings go live.</li>
+        </ol>
+
         {verified && <p className="trade-success" role="status">You are verified. Thank you for helping keep Rehang safe.</p>}
         {!verified && pending && <p className="trade-hint">Your documents are with our team. We usually reply within a day.</p>}
         {!verified && !pending && (
