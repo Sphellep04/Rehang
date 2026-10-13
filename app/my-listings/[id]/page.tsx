@@ -9,6 +9,7 @@ import { getViewerId } from "@/lib/supabase/viewer";
 import { PageLoading } from "../../_components/page-loading";
 import { SiteHeader } from "../../_components/site-header";
 import { EditForm } from "./edit-form";
+import { PhotoEditor, type StoredPhoto } from "./photo-editor";
 
 export const metadata: Metadata = { title: "Edit listing | Rehang" };
 
@@ -33,11 +34,25 @@ async function EditContent({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
   const { data: item } = await supabase
     .from("items")
-    .select("id,title,description,brand_text,price_cents,status")
+    .select("id,title,description,brand_text,price_cents,status,condition")
     .eq("id", id)
     .eq("seller_id", viewerId)
     .maybeSingle();
   if (!item) notFound();
+  const { data: photoRows } = await supabase
+    .from("item_photos")
+    .select("id,kind,position,path_thumb,path_card,path_full,width,height,phash")
+    .eq("item_id", id)
+    .order("position");
+  const stored: StoredPhoto[] = (photoRows ?? []).map((row) => ({
+    id: row.id as string,
+    kind: row.kind as StoredPhoto["kind"],
+    previewUrl: supabase.storage.from("item-photos").getPublicUrl(row.path_card as string).data.publicUrl,
+    paths: { thumb: row.path_thumb as string, card: row.path_card as string, full: row.path_full as string },
+    width: row.width as number,
+    height: row.height as number,
+    phash: (row.phash as string | null) ?? null,
+  }));
   const editable = ["draft", "awaiting_verification", "active"].includes(item.status as string);
 
   return (
@@ -47,7 +62,10 @@ async function EditContent({ params }: { params: Promise<{ id: string }> }) {
         <Link className="plain-button" href="/my-listings">← My listings</Link>
         <h1 className="browse-title">Edit <em>listing.</em></h1>
         {editable
-          ? <EditForm itemId={item.id as string} title={item.title as string} description={(item.description as string | null) ?? ""} brand={(item.brand_text as string | null) ?? ""} priceDollars={Math.round(Number(item.price_cents) / 100)} live={item.status === "active"} />
+          ? <>
+              <EditForm itemId={item.id as string} title={item.title as string} description={(item.description as string | null) ?? ""} brand={(item.brand_text as string | null) ?? ""} priceDollars={Math.round(Number(item.price_cents) / 100)} live={item.status === "active"} />
+              <PhotoEditor itemId={item.id as string} condition={item.condition as string} stored={stored} />
+            </>
           : <p className="trade-hint">This listing can&apos;t be edited while it is {item.status === "reserved" ? "reserved for a buyer" : item.status}.</p>}
       </section>
     </main>

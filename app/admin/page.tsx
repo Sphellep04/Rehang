@@ -11,6 +11,7 @@ import { PageLoading } from "../_components/page-loading";
 import { SiteHeader } from "../_components/site-header";
 import { reportReasons } from "@/lib/moderation";
 import { AdminActions } from "./admin-actions";
+import { FlagDismiss } from "./flag-dismiss";
 
 export const metadata: Metadata = { title: "Moderation | Rehang", robots: { index: false, follow: false } };
 
@@ -35,20 +36,22 @@ async function AdminContent() {
   // Members get the same page as a missing one, so the route does not advertise itself.
   if (me?.role !== "moderator" && me?.role !== "admin") notFound();
 
-  const [reportsResult, verificationsResult, disputedResult, logResult] = await Promise.all([
+  const [reportsResult, verificationsResult, disputedResult, logResult, flagsResult] = await Promise.all([
     supabase.from("reports").select("id,reporter_id,target_type,target_id,reason,details,created_at").eq("status", "open").order("created_at").limit(50),
     supabase.from("verifications").select("id,user_id,status,legal_name,document_path,selfie_path,created_at").in("status", ["pending", "escalated"]).order("created_at").limit(50),
     supabase.from("orders").select("id,item_id,buyer_id,seller_id,amount_cents,created_at").eq("status", "disputed").order("created_at").limit(50),
     supabase.from("moderator_actions").select("id,actor_id,action,target_type,target_id,note,created_at").order("created_at", { ascending: false }).limit(30),
+    supabase.from("item_flags").select("id,item_id,detail,created_at").is("resolved_at", null).order("created_at").limit(50),
   ]);
 
   const reports = reportsResult.data ?? [];
   const verifications = verificationsResult.data ?? [];
   const disputed = disputedResult.data ?? [];
   const log = logResult.data ?? [];
+  const flags = flagsResult.data ?? [];
 
   // Names and titles for everything on the page, fetched in two batches.
-  const itemIds = [...new Set([...reports.filter((r) => r.target_type === "item").map((r) => r.target_id as string), ...disputed.map((o) => o.item_id as string).filter(Boolean)])];
+  const itemIds = [...new Set([...reports.filter((r) => r.target_type === "item").map((r) => r.target_id as string), ...disputed.map((o) => o.item_id as string).filter(Boolean), ...flags.flatMap((f) => [f.item_id as string, (f.detail as { matches_item?: string }).matches_item ?? ""]).filter(Boolean)])];
   const userIds = [...new Set([
     ...reports.flatMap((r) => [r.reporter_id as string, ...(r.target_type === "user" ? [r.target_id as string] : [])]),
     ...verifications.map((v) => v.user_id as string),
@@ -120,6 +123,26 @@ async function AdminContent() {
                   <small>{v.status === "escalated" ? "Escalated · " : ""}{formatWindhoek(v.created_at as string)}. Links expire in 10 minutes.</small>
                 </div>
                 <AdminActions kind="verification" id={v.id as string} />
+              </li>
+            );
+          })}
+        </ul>
+
+        <h2 className="list-heading">Photo matches ({flags.length})</h2>
+        {flags.length === 0 && <p className="trade-hint">No suspicious photos.</p>}
+        <ul className="list-cards">
+          {flags.map((flag) => {
+            const item = itemById.get(flag.item_id as string);
+            const detail = flag.detail as { matches_item?: string; distance?: number };
+            const other = detail.matches_item ? itemById.get(detail.matches_item) : undefined;
+            return (
+              <li className="list-card admin-card" key={flag.id as string}>
+                <div className="list-card-main">
+                  <b>Photo matches another seller</b>
+                  <p>{item ? <Link href={`/item/${item.id as string}`}>{item.title as string}</Link> : "A listing"} by {item ? who(item.seller_id as string) : "unknown"} looks like {other ? <Link href={`/item/${other.id as string}`}>{other.title as string}</Link> : "another listing"}{other ? <> by {who(other.seller_id as string)}</> : null}. If it is a copy, report the newer listing from its page.</p>
+                  <small>{formatWindhoek(flag.created_at as string)} · difference {detail.distance ?? "?"} of 64</small>
+                </div>
+                <FlagDismiss id={flag.id as string} />
               </li>
             );
           })}

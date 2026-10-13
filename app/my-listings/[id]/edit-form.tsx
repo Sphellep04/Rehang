@@ -48,7 +48,7 @@ export function EditForm(props: Props) {
       <label htmlFor="edit-price">Price in N$</label>
       <input id="edit-price" type="number" min={20} max={20000} step={1} value={price} onChange={(event) => setPrice(event.target.value)} required />
       {dropping && <p className="trade-hint">Lowering the price tells everyone who saved this item.</p>}
-      <p className="trade-hint">Photos, size, condition and colour can&apos;t be changed. Remove the listing and add it again if they are wrong.</p>
+      <p className="trade-hint">Size, condition and colour can&apos;t be changed. Remove the listing and add it again if they are wrong.</p>
       <button className="button button-coral" type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</button>
       {error && <p className="inline-error" role="alert">{error}</p>}
       {saved && <p className="trade-success" role="status">Saved.</p>}

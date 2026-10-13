@@ -1,17 +1,16 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { tradeError } from "@/lib/trade";
+import { uploadEntries, type PhotoEntry } from "@/lib/photo-client";
+import { PhotoPicker } from "../_components/photo-picker";
 
 type CategoryOption = { id: number; name: string };
 type SizeOption = { id: number; system: string; value: string };
 type TownOption = { id: number; name: string };
-type PhotoKind = "front" | "back" | "label" | "flaw" | "tags" | "other";
-type PhotoSelection = { file: File; kind: PhotoKind };
-type EncodedPhoto = { blob: Blob; width: number; height: number; size: "thumb" | "card" | "full" };
 
 const conditions = [
   ["new_with_tags", "New with tags"],
@@ -22,41 +21,6 @@ const conditions = [
 ] as const;
 
 const colorChoices = ["Black", "White", "Grey", "Beige", "Brown", "Red", "Pink", "Orange", "Yellow", "Green", "Blue", "Navy", "Purple", "Gold", "Silver", "Multi", "Print/pattern"];
-const photoSlots: { kind: PhotoKind; label: string; hint: string; multiple?: boolean }[] = [
-  { kind: "front", label: "Front", hint: "Required" },
-  { kind: "back", label: "Back", hint: "Required" },
-  { kind: "label", label: "Care label", hint: "Required" },
-  { kind: "flaw", label: "Flaws", hint: "Required for Good and Fair" },
-  { kind: "tags", label: "Tags", hint: "Required for New with tags" },
-  { kind: "other", label: "Other details", hint: "Optional · up to 3", multiple: true },
-];
-
-async function encodeWebp(file: File, maxSide: number, size: EncodedPhoto["size"]): Promise<EncodedPhoto> {
-  const bitmap = await createImageBitmap(file);
-  if (Math.min(bitmap.width, bitmap.height) < 600) {
-    bitmap.close();
-    throw new Error(`${file.name}: use an image at least 600 pixels on its shortest side.`);
-  }
-
-  const ratio = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
-  const width = Math.round(bitmap.width * ratio);
-  const height = Math.round(bitmap.height * ratio);
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const context = canvas.getContext("2d");
-  if (!context) {
-    bitmap.close();
-    throw new Error("This browser could not prepare the photo. Try another image.");
-  }
-
-  context.drawImage(bitmap, 0, 0, width, height);
-  bitmap.close();
-  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.82));
-  if (!blob) throw new Error(`Could not prepare ${file.name} as WebP.`);
-  return { blob, width, height, size };
-}
-
 export function ListingForm({
   categories,
   sizes,
@@ -71,21 +35,13 @@ export function ListingForm({
   verificationLevel: string;
 }) {
   const router = useRouter();
-  const [photos, setPhotos] = useState<PhotoSelection[]>([]);
+  const [photos, setPhotos] = useState<PhotoEntry[]>([]);
+  const draftId = useRef<string | null>(null);
+  const [progress, setProgress] = useState("");
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [needsId, setNeedsId] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
-  function selectPhotos(kind: PhotoKind, files: FileList | null, multiple: boolean) {
-    if (!files) return;
-    const chosen = Array.from(files).map((file) => ({ file, kind }));
-    setPhotos((current) => {
-      const retained = current.filter((photo) => photo.kind !== kind);
-      const next = [...retained, ...(multiple ? chosen.slice(0, 3) : chosen.slice(0, 1))];
-      return next.slice(0, 8);
-    });
-  }
 
   function toggleColor(color: string) {
     setSelectedColors((current) => {
@@ -106,7 +62,7 @@ export function ListingForm({
     const brandText = String(formData.get("brand_text") ?? "").trim();
     const condition = String(formData.get("condition") ?? "");
     const price = Number(formData.get("price"));
-    const requiredKinds: PhotoKind[] = ["front", "back", "label"];
+    const requiredKinds = ["front", "back", "label"];
 
     if (title.length < 10 || title.length > 60) return setMessage("Title must be 10 to 60 characters.");
     if (description.length > 500) return setMessage("Description must be 500 characters or fewer.");
@@ -131,62 +87,41 @@ export function ListingForm({
         return;
       }
 
-      const { data: item, error: itemError } = await supabase
-        .from("items")
-        .insert({
-          title,
-          description: description || null,
-          category_id: Number(formData.get("category_id")),
-          size_id: Number(formData.get("size_id")),
-          condition,
-          brand_text: brandText || null,
-          colours: selectedColors,
-          price_cents: price * 100,
-          town_id: Number(formData.get("town_id")),
-        })
-        .select("id")
-        .single();
-
-      if (itemError || !item) {
-        setMessage("Could not save this draft. Check the details and try again.");
-        return;
-      }
-
-      const photoRows = [];
-      for (const [index, photo] of photos.entries()) {
-        const variants = await Promise.all([
-          encodeWebp(photo.file, 320, "thumb"),
-          encodeWebp(photo.file, 720, "card"),
-          encodeWebp(photo.file, 1600, "full"),
-        ]);
-        const paths: Record<EncodedPhoto["size"], string> = { thumb: "", card: "", full: "" };
-
-        for (const variant of variants) {
-          const path = `${user.id}/${item.id}/${crypto.randomUUID()}-${variant.size}.webp`;
-          const { error: uploadError } = await supabase.storage.from("item-photos").upload(path, variant.blob, {
-            contentType: "image/webp",
-            upsert: false,
-          });
-          if (uploadError) throw new Error("A photo could not be uploaded. Your item is saved as a draft; try again after checking your connection.");
-          paths[variant.size] = path;
+      let itemId = draftId.current;
+      if (!itemId) {
+        const { data: item, error: itemError } = await supabase
+          .from("items")
+          .insert({
+            title,
+            description: description || null,
+            category_id: Number(formData.get("category_id")),
+            size_id: Number(formData.get("size_id")),
+            condition,
+            brand_text: brandText || null,
+            colours: selectedColors,
+            price_cents: price * 100,
+            town_id: Number(formData.get("town_id")),
+          })
+          .select("id")
+          .single();
+        if (itemError || !item) {
+          setMessage("Could not save this draft. Check the details and try again.");
+          return;
         }
-
-        photoRows.push({
-          item_id: item.id,
-          position: index + 1,
-          kind: photo.kind,
-          path_thumb: paths.thumb,
-          path_card: paths.card,
-          path_full: paths.full,
-          width: variants[2].width,
-          height: variants[2].height,
-        });
+        itemId = item.id as string;
+        // If anything below fails, trying again continues with this same draft instead of making a second one.
+        draftId.current = itemId;
       }
 
-      const { error: photoError } = await supabase.from("item_photos").insert(photoRows);
-      if (photoError) throw new Error("Your item draft was saved, but its photos were not attached. Please try saving again.");
+      const { rows, uploaded } = await uploadEntries(supabase, user.id, itemId, photos, (done, total) => setProgress(total ? `Uploading photo ${Math.min(done + 1, total)} of ${total}…` : ""));
+      setProgress("Saving…");
+      const { error: photoError } = await supabase.rpc("set_item_photos", { p_item: itemId, p_photos: rows });
+      if (photoError) {
+        if (uploaded.length) await supabase.storage.from("item-photos").remove(uploaded);
+        throw new Error(`Your draft is saved but its photos were not. ${tradeError(photoError.message)}`);
+      }
 
-      const { data: published, error: publishError } = await supabase.rpc("publish_item", { p_item: item.id });
+      const { data: published, error: publishError } = await supabase.rpc("publish_item", { p_item: itemId });
       if (publishError) {
         setMessage(`Saved as a draft. ${tradeError(publishError.message)}`);
         return;
@@ -197,12 +132,14 @@ export function ListingForm({
       setNeedsId(published !== "active");
       formElement.reset();
       setPhotos([]);
+      draftId.current = null;
       setSelectedColors([]);
       router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not save this draft. Try again.");
     } finally {
       setIsSaving(false);
+      setProgress("");
     }
   }
 
@@ -225,15 +162,11 @@ export function ListingForm({
 
       <section className="listing-form-section">
         <div className="form-section-heading"><span>02</span><div><h2>Photos</h2><p>Use clear photos of the actual item. Front, back and care label are required.</p></div></div>
-        <div className="photo-slots">{photoSlots.map((slot) => {
-          const selected = photos.filter((photo) => photo.kind === slot.kind);
-          const isRequired = slot.kind === "front" || slot.kind === "back" || slot.kind === "label";
-          return <label className="photo-slot" key={slot.kind} htmlFor={`photo-${slot.kind}`}><span className="photo-slot-mark">{selected.length ? "✓" : "+"}</span><span className="photo-slot-title">{slot.label}{isRequired && <b>Required</b>}</span><small>{selected.length ? selected.map((photo) => photo.file.name).join(", ") : slot.hint}</small><input id={`photo-${slot.kind}`} type="file" accept="image/jpeg,image/png,image/webp" multiple={slot.multiple} onChange={(event) => selectPhotos(slot.kind, event.target.files, slot.multiple ?? false)} /></label>;
-        })}</div>
+        <PhotoPicker entries={photos} setEntries={setPhotos} />
       </section>
 
       <p className="listing-save-note" role="status" aria-live="polite">{message}{needsId && <> <Link href="/verify">Verify my ID</Link></>}</p>
-      <div className="listing-submit-row"><p>{verificationLevel === "level2" ? "You are verified, so your listing goes live straight away." : "Only ID-verified sellers go live straight away. Yours will be published automatically once your ID is approved."}</p><button className="button button-ink" type="submit" disabled={isSaving}>{isSaving ? "Publishing…" : "Publish listing"}</button></div>
+      <div className="listing-submit-row"><p>{verificationLevel === "level2" ? "You are verified, so your listing goes live straight away." : "Only ID-verified sellers go live straight away. Yours will be published automatically once your ID is approved."}</p><button className="button button-ink" type="submit" disabled={isSaving}>{isSaving ? (progress || "Publishing…") : "Publish listing"}</button></div>
     </form>
   );
 }

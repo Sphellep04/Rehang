@@ -549,7 +549,8 @@ Each milestone should end with something usable on a phone.
 
 - [x] Categories, sizes and size groups seeded ([listing standards](docs/product/listing-standards.md))
 - [x] Single-item listing form with browser WebP compression in three sizes and EXIF removal
-- [ ] Blur, duplicate-photo (perceptual hash) and contact-info checks
+- [x] Photo previews, replace and remove (also on live listings from `/my-listings`), iPhone HEIC support, upload progress with clean-up on failure, blur warning and duplicate-photo flagging for moderators (perceptual hash, compared across sellers on the server)
+- [ ] Reading phone numbers out of photos (needs OCR, not built). Blur and duplicate checks warn or flag rather than block, so honest sellers are never stopped by a false alarm
 - [x] Item details form with validation, condition-specific photo checks, and private draft save
 - [ ] Closet clear-out mode with offline drafts. Done: "Waiting for verification" status and auto-publish on ID approval
 - [x] Feed reads active listings from Supabase when configured; example catalog remains for local preview

@@ -63,6 +63,10 @@ const messages: Record<string, string> = {
   verification_not_found: "We couldn't find that verification.",
   already_reviewed: "This verification has already been reviewed.",
   cannot_review_own: "You can't review your own verification.",
+  item_not_editable: "This listing can't be changed right now.",
+  photo_count_invalid: "A listing needs 3 to 8 photos, with no more than 3 extra detail photos.",
+  flaw_photo_missing: "Add a photo showing the item's wear or flaws.",
+  tags_photo_missing: "Add a photo showing the original tags.",
   reason_required: "Please give a reason so the person knows what to fix.",
 };
 
