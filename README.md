@@ -8,7 +8,7 @@ The name comes from the hanger: a garment is "hung again" and gets a second life
 
 | | |
 |---|---|
-| **Status** | Phase 0: Validate · M0 app and database foundation (sample data only) |
+| **Status** | Phase 1: Build and pilot · schema, account UI, seller drafts and chat in progress |
 | **Plan version** | v2, 29 September 2026 (v1,  See [changes](#21-changes-from-the-original-plan)) |
 | **Owner** | Phellep Shapopi |
 | **Launch market** | Windhoek, Namibia |
@@ -179,7 +179,6 @@ The MVP does five things well: **sign up and verify, list fast, browse and filte
 
 - Split payouts to bank or mobile wallets.
 - Drop-off partner shops and pick-up lockers.
-- AI listing helper: suggests title, category, colour and price from photos.
 - Closet Pickup: Rehang collects, photographs and lists items for busy sellers.
 - Charity donation for unsold items.
 - Native mobile app (iOS and Android) if the web app proves demand.
@@ -485,7 +484,9 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. Run `npm run lint` and `npm run build` before sharing changes. The home feed still uses sample listings; authentication, live inventory and messaging are not connected yet.
+Open `http://localhost:3000`. Run `npm run lint` and `npm run build` before sharing changes. With Supabase configured, the home feed reads active listings under RLS; without it, the clearly labeled example catalog is shown. Phone OTP requires a configured Supabase SMS provider. Seller drafts compress photos into three WebP sizes. The inbox supports participant-only realtime chat, blocking, and server-side contact-detail flags. Offers, orders, verification review, and moderation are still in progress.
+
+Copy `.env.example` to `.env.local` and fill in the local Supabase URL and publishable key printed by `npx supabase status`. Never put a service-role key in a `NEXT_PUBLIC_` variable or in browser code.
 
 For the local database (requires Docker and the Supabase CLI):
 
@@ -495,7 +496,7 @@ npx supabase db reset
 npx supabase test db
 ```
 
-The foundation migration seeds Windhoek and the initial non-secret app configuration. Workflow and CI: [testing and deployment](docs/engineering/testing-and-deployment.md).
+The migrations seed Windhoek, the initial non-secret configuration, categories, sizes and size groups. Workflow and CI: [testing and deployment](docs/engineering/testing-and-deployment.md).
 
 ---
 
@@ -529,13 +530,16 @@ Each milestone should end with something usable on a phone.
 - [ ] GitHub Actions CI: typecheck, lint, unit tests, pgTAP, Playwright ([setup](docs/engineering/testing-and-deployment.md#ci-github-actions))
 - [ ] PWA manifest, icons, brand colours ([brand guide](docs/brand/brand-guide.md))
 - [ ] Sentry, PostHog and uptime check wired in
-- [x] Write the first migration for enums, `users`, `towns`, and `app_config`, with initial seed rows
-- [ ] Apply the migration locally and pass the pgTAP tests
+- [x] Write migrations for enums, users, catalog, conversations, orders, moderation, payments, payouts and growth-related tables
+- [x] Add RLS policies, storage buckets, catalog seeds and pgTAP coverage
+- [ ] Apply migrations with the Supabase CLI and pass the pgTAP suite
 
 #### M1: Accounts and verification (November 2026)
 
-- [ ] Phone OTP login (+264), with an SMS provider confirmed for MTC and TN Mobile
-- [ ] Onboarding: name, handle, town, photo. Level 1 adds email. Terms consent recorded
+- [x] Implement +264 phone OTP actions and sign-in UI with Supabase SSR session handling (SMS provider still needs confirmation for MTC and TN Mobile)
+- [x] Add profile creation on signup and profile completion with name, handle, town and draft terms consent
+- [ ] Confirm end-to-end OTP delivery with an SMS provider for MTC and TN Mobile
+- [ ] Add profile photo and Level 1 email verification
 - [ ] Profile and public shop page at `/[handle]`
 - [ ] ID plus live selfie upload to the private bucket (Level 2), and the ID number hash check
 - [ ] `verification_level` gating in RLS and in the UI. Limits read from `app_config`
@@ -543,19 +547,20 @@ Each milestone should end with something usable on a phone.
 
 #### M2: Listings and discovery (December 2026 – mid January 2027)
 
-- [ ] Categories, sizes, size groups and brands seeded ([listing standards](docs/product/listing-standards.md))
-- [ ] Guided photo flow with compression to WebP in three sizes, and EXIF stripping
+- [x] Categories, sizes and size groups seeded ([listing standards](docs/product/listing-standards.md))
+- [x] Single-item listing form with browser WebP compression in three sizes and EXIF removal
 - [ ] Blur, duplicate-photo (perceptual hash) and contact-info checks
-- [ ] Item details form with validation
+- [x] Item details form with validation, condition-specific photo checks, and private draft save
 - [ ] Closet clear-out mode with offline drafts. "Waiting for verification" status and auto-publish on approval
-- [ ] Feed, full-text search and filters (size group, brand, condition, price, town)
+- [x] Feed reads active listings from Supabase when configured; example catalog remains for local preview
+- [ ] Full-text search and filters (size group, brand, condition, price, town)
 - [ ] Favourites and follow seller
 - [ ] Data saver mode. Low-data targets met
 
 #### M3: Chat and offers (January 2027)
 
-- [ ] Realtime chat per item, with block
-- [ ] Phone-number and handle detection with off-app warnings
+- [x] Realtime chat per item with participant-only RLS, realtime updates, and block
+- [x] Server-side phone-number and social-handle detection with in-chat warnings and message flags
 - [ ] Offers: make, accept, counter, decline, expire (24h), 60% minimum
 - [ ] New-listing daily digest for followers
 - [ ] SMS for critical events ([notification table](docs/product/orders-meetups-and-delivery.md#notifications))

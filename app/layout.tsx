@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Rehang | Good clothes, second rounds",
-  description: "Find pre-loved fashion from verified sellers in Windhoek. Clear your closet and give good clothes another life.",
+  description: "Rehang is a Windhoek-first marketplace for buying and selling second-hand clothes. Preview examples while the marketplace is being built.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
