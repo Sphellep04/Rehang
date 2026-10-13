@@ -269,6 +269,74 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .compose-warning { padding: 7px 9px; background: #fff1d9; }
 .chat-blocked { padding: 16px; color: var(--muted); text-align: center; font-size: 10px; }
 
+/* Discovery: shop pages, item pages, browse and saved */
+.follow-wrap { display: flex; flex-direction: column; gap: 6px; }
+.inline-error { margin: 0; color: var(--coral-dark); font-size: 10px; }
+.badge { display: inline-block; padding: 5px 8px; border: 1px solid var(--line); background: var(--white); color: #4f514b; font-size: 9px; }
+.badge-green { border-color: #bcd8c7; color: #1f6b41; }
+.plain-button { display: inline-flex; align-items: center; color: var(--ink); font-size: 11px; }
+a.plain-button:hover { color: var(--coral-dark); }
+
+.shop-hero { display: grid; grid-template-columns: 96px minmax(0,1fr) auto; align-items: start; gap: 26px; padding: 44px 8.4vw 38px; background: #f0e8dc; }
+.shop-avatar { width: 96px; height: 96px; display: grid; place-items: center; overflow: hidden; border-radius: 50%; background: #e7ddd0; font-family: Georgia, "Times New Roman", serif; font-size: 40px; }
+.shop-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.shop-hero-body h1 { margin: 6px 0 10px; font-family: Georgia, "Times New Roman", serif; font-size: 40px; font-weight: 400; line-height: 1.1; }
+.shop-badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+.shop-badges:empty { display: none; }
+.shop-bio { max-width: 520px; margin: 0 0 18px; color: #565650; font-size: 13px; line-height: 1.7; }
+.shop-stats { display: flex; flex-wrap: wrap; gap: 28px; margin: 0; }
+.shop-stats div { min-width: 56px; }
+.shop-stats dt { color: var(--muted); font-size: 9px; }
+.shop-stats dd { margin: 4px 0 0; font-size: 16px; font-weight: 700; }
+.shop-sold .listing-image img { filter: grayscale(.6); opacity: .75; }
+
+.crumbs { display: flex; gap: 8px; padding: 18px 8.4vw 0; color: var(--muted); font-size: 10px; }
+.crumbs a:hover { color: var(--coral-dark); }
+.item-layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 48px; padding: 22px 8.4vw 56px; }
+.item-photo { position: relative; aspect-ratio: .83; overflow: hidden; background: #e7ddd0; }
+.item-photo img { width: 100%; height: 100%; object-fit: cover; }
+.item-photo-empty { height: 100%; display: grid; place-items: center; color: var(--muted); font-size: 12px; }
+.item-status { position: absolute; top: 14px; left: 14px; padding: 8px 12px; background: var(--ink); color: white; font-size: 10px; font-weight: 700; }
+.item-details { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; padding-top: 6px; }
+.item-details h1 { margin: 10px 0 8px; font-family: Georgia, "Times New Roman", serif; font-size: 36px; font-weight: 400; line-height: 1.12; overflow-wrap: anywhere; }
+.item-price { margin: 0; font-size: 22px; font-weight: 700; }
+.item-meta { margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+.item-description { max-width: 480px; margin: 18px 0 0; color: #4d4d47; font-size: 13px; line-height: 1.75; white-space: pre-line; overflow-wrap: anywhere; }
+.item-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin: 24px 0; }
+.item-note { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.item-save { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 10px; }
+.save-button-inline { position: static; border: 1px solid var(--line); }
+.item-seller { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.item-seller-link { display: flex; align-items: center; gap: 12px; font-size: 12px; }
+.item-seller-link small { display: block; margin-top: 4px; color: var(--green); font-size: 9px; }
+.item-seller-avatar { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: #e7ddd0; font-family: Georgia, "Times New Roman", serif; font-size: 18px; }
+.item-safety { max-width: 480px; margin: 18px 0 0; color: var(--muted); font-size: 10px; line-height: 1.7; }
+
+.browse { padding: 44px 8.4vw 76px; }
+.browse-title { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 40px; font-weight: 400; line-height: 1.1; }
+.browse-title em { color: var(--coral); font-weight: 400; }
+.filter-bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 16px; padding: 16px 0 20px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 26px; }
+.filter-bar label { display: flex; flex-direction: column; gap: 5px; color: var(--muted); font-size: 9px; }
+.filter-bar select, .filter-bar input[type="number"] { min-width: 112px; height: 38px; padding: 0 10px; border: 1px solid #d9d0c4; background: var(--white); color: var(--ink); font-size: 11px; }
+.filter-bar input[type="number"] { min-width: 84px; width: 96px; }
+.filter-actions { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.pager { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 44px; color: var(--muted); font-size: 11px; }
+
+@media (max-width: 760px) {
+  .shop-hero { grid-template-columns: 72px minmax(0,1fr); padding: 30px 20px; gap: 16px; }
+  .shop-avatar { width: 72px; height: 72px; font-size: 30px; }
+  .shop-actions { grid-column: 1 / -1; }
+  .shop-hero-body h1 { font-size: 30px; }
+  .item-layout { grid-template-columns: 1fr; gap: 24px; padding: 14px 20px 40px; }
+  .item-details h1 { font-size: 28px; }
+  .crumbs { padding: 14px 20px 0; }
+  .browse { padding: 30px 20px 56px; }
+  .browse-title { font-size: 30px; }
+  .filter-bar label { flex: 1 1 42%; }
+  .filter-bar select, .filter-bar input[type="number"] { width: 100%; min-width: 0; }
+  .filter-actions { width: 100%; margin-left: 0; }
+}
+
 @media (max-width: 1050px) {
   .site-header { grid-template-columns: 130px minmax(110px,1fr) minmax(210px,1.4fr) auto; gap: 13px; padding-right: 4vw; padding-left: 4vw; }
   .header-actions { gap: 12px; }
@@ -353,3 +421,5 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+.page-loading { min-height: 50vh; display: grid; place-items: center; color: var(--muted); font-size: 12px; }

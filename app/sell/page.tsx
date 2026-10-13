@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -8,7 +9,7 @@ type CategoryRow = { id: number; name: string; parent_id: number | null };
 type SizeRow = { id: number; system: string; value: string };
 type TownRow = { id: number; name: string };
 
-export default async function SellPage() {
+export default function SellPage() {
   if (!isSupabaseConfigured()) {
     return (
       <main className="auth-page">
@@ -23,6 +24,14 @@ export default async function SellPage() {
     );
   }
 
+  return (
+    <Suspense fallback={<main className="auth-page"><p className="auth-loading">Loading your shop…</p></main>}>
+      <SellContent />
+    </Suspense>
+  );
+}
+
+async function SellContent() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   if (!claimsData?.claims.sub) redirect("/login");

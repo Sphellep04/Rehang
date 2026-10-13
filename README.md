@@ -540,7 +540,7 @@ Each milestone should end with something usable on a phone.
 - [x] Add profile creation on signup and profile completion with name, handle, town and draft terms consent
 - [ ] Confirm end-to-end OTP delivery with an SMS provider for MTC and TN Mobile
 - [ ] Add profile photo and Level 1 email verification
-- [ ] Profile and public shop page at `/[handle]`
+- [x] Profile and public shop page at `/[handle]`
 - [ ] ID plus live selfie upload to the private bucket (Level 2), and the ID number hash check
 - [ ] `verification_level` gating in RLS and in the UI. Limits read from `app_config`
 - [ ] ID image deletion job
@@ -553,8 +553,8 @@ Each milestone should end with something usable on a phone.
 - [x] Item details form with validation, condition-specific photo checks, and private draft save
 - [ ] Closet clear-out mode with offline drafts. "Waiting for verification" status and auto-publish on approval
 - [x] Feed reads active listings from Supabase when configured; example catalog remains for local preview
-- [ ] Full-text search and filters (size group, brand, condition, price, town)
-- [ ] Favourites and follow seller
+- [ ] Full-text search and filters. Done: prefix search, category, size group, condition, price, sort. Still to do: brand and town filters
+- [x] Favourites and follow seller (saved list at `/saved`, follower counts on shop pages)
 - [ ] Data saver mode. Low-data targets met
 
 #### M3: Chat and offers (January 2027)
