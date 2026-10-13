@@ -11,6 +11,7 @@ import { PageLoading } from "../../_components/page-loading";
 import { SiteHeader } from "../../_components/site-header";
 import { OrderActions, type Spot } from "./order-actions";
 import { ReviewForm } from "./review-form";
+import { DisputePanel } from "./dispute-panel";
 import { Stars } from "../../_components/stars";
 
 export const metadata: Metadata = { title: "Order | Rehang" };
@@ -60,6 +61,12 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
     ? await supabase.from("meetup_spots").select("id,name,address").eq("town_id", item.town_id).eq("active", true).order("name")
     : { data: [] };
 
+  const { data: dispute } = await supabase
+    .from("disputes")
+    .select("opened_by,reason,buyer_statement,seller_statement,decision,decision_note,decided_at")
+    .eq("order_id", id)
+    .maybeSingle();
+
   const { data: reviewRows } = order.status === "completed"
     ? await supabase.from("reviews").select("reviewer_id,rating,comment").eq("order_id", id)
     : { data: [] };
@@ -74,6 +81,14 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
   const reportedBy = (who: "me" | "other") => eventList.some((e) => e.event === "no_show_reported" && (who === "me" ? e.actor_id === viewerId : e.actor_id !== viewerId));
   const disputed = eventList.some((e) => e.event === "no_show_disputed");
   const agreementByOther = eventList.some((e) => e.event === "cancel_agreement_requested" && e.actor_id !== viewerId && now - new Date(e.created_at).getTime() < 48 * 3600 * 1000);
+
+  const canReportProblem = !dispute && (
+    (order.status === "awaiting_meetup" && confirmed && Boolean(order.meetup_at) && now >= new Date(order.meetup_at as string).getTime())
+    || (order.status === "completed" && Boolean(order.completed_at) && now - new Date(order.completed_at as string).getTime() < 7 * 24 * 3600 * 1000)
+  );
+  const myStatement = role === "buyer" ? dispute?.buyer_statement : dispute?.seller_statement;
+  const theirStatement = role === "buyer" ? dispute?.seller_statement : dispute?.buyer_statement;
+  const canRespond = Boolean(dispute) && !dispute?.decided_at && !myStatement && dispute?.opened_by !== viewerId;
 
   const canReportNoShow = open && confirmed && Boolean(order.meetup_at) && now >= new Date(order.meetup_at as string).getTime() + 30 * 60 * 1000;
 
@@ -100,7 +115,19 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
 
         {order.status === "completed" && <p className="trade-success" role="status">Sale complete{order.completed_at ? ` on ${formatWindhoek(order.completed_at)}` : ""}. Thank you for choosing secondhand.</p>}
         {order.status === "cancelled" && <p className="trade-hint">This order was cancelled{order.cancelled_at ? ` on ${formatWindhoek(order.cancelled_at)}` : ""}.</p>}
-        {order.status === "disputed" && <p className="trade-hint">This order is locked while our team reviews it. We will message you both.</p>}
+        
+        {dispute && (
+          <div className="order-form">
+            <h3>{dispute.decided_at ? "Our decision" : "Under review"}</h3>
+            {dispute.decided_at
+              ? <p className="trade-hint">{dispute.decision_note as string}</p>
+              : <p className="trade-hint">Our team is reviewing this order. We will message you both.</p>}
+            {myStatement && <p className="trade-hint"><b>Your side:</b> {myStatement as string}</p>}
+            {theirStatement && <p className="trade-hint"><b>Their side:</b> {theirStatement as string}</p>}
+          </div>
+        )}
+        {canRespond && <DisputePanel orderId={order.id} mode="respond" />}
+        {canReportProblem && <DisputePanel orderId={order.id} mode="report" />}
         {disputed && open && <p className="trade-hint">A no-show report is under review.</p>}
 
         {order.status === "completed" && (

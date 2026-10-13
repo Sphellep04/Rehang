@@ -12,6 +12,7 @@ import { SiteHeader } from "../_components/site-header";
 import { reportReasons } from "@/lib/moderation";
 import { AdminActions } from "./admin-actions";
 import { FlagDismiss } from "./flag-dismiss";
+import { DisputeDecision } from "./dispute-decision";
 
 export const metadata: Metadata = { title: "Moderation | Rehang", robots: { index: false, follow: false } };
 
@@ -36,17 +37,22 @@ async function AdminContent() {
   // Members get the same page as a missing one, so the route does not advertise itself.
   if (me?.role !== "moderator" && me?.role !== "admin") notFound();
 
-  const [reportsResult, verificationsResult, disputedResult, logResult, flagsResult] = await Promise.all([
+  const [reportsResult, verificationsResult, disputesResult, logResult, flagsResult] = await Promise.all([
     supabase.from("reports").select("id,reporter_id,target_type,target_id,reason,details,created_at").eq("status", "open").order("created_at").limit(50),
     supabase.from("verifications").select("id,user_id,status,legal_name,document_path,selfie_path,created_at").in("status", ["pending", "escalated"]).order("created_at").limit(50),
-    supabase.from("orders").select("id,item_id,buyer_id,seller_id,amount_cents,created_at").eq("status", "disputed").order("created_at").limit(50),
+    supabase.from("disputes").select("order_id,opened_by,reason,buyer_statement,seller_statement,created_at").is("decided_at", null).order("created_at").limit(50),
     supabase.from("moderator_actions").select("id,actor_id,action,target_type,target_id,note,created_at").order("created_at", { ascending: false }).limit(30),
     supabase.from("item_flags").select("id,item_id,detail,created_at").is("resolved_at", null).order("created_at").limit(50),
   ]);
 
   const reports = reportsResult.data ?? [];
   const verifications = verificationsResult.data ?? [];
-  const disputed = disputedResult.data ?? [];
+  const disputeRows = disputesResult.data ?? [];
+  const { data: disputeOrders } = disputeRows.length
+    ? await supabase.from("orders").select("id,item_id,buyer_id,seller_id,amount_cents,status").in("id", disputeRows.map((d) => d.order_id as string))
+    : { data: [] };
+  const disputed = (disputeOrders ?? []) as { id: string; item_id: string; buyer_id: string; seller_id: string; amount_cents: number; status: string }[];
+  const orderById = new Map(disputed.map((order) => [order.id, order]));
   const log = logResult.data ?? [];
   const flags = flagsResult.data ?? [];
 
@@ -148,18 +154,25 @@ async function AdminContent() {
           })}
         </ul>
 
-        <h2 className="list-heading">Orders under review ({disputed.length})</h2>
-        {disputed.length === 0 && <p className="trade-hint">No orders under review.</p>}
+        <h2 className="list-heading">Order problems ({disputeRows.length})</h2>
+        {disputeRows.length === 0 && <p className="trade-hint">No orders under review.</p>}
         <ul className="list-cards">
-          {disputed.map((order) => (
-            <li className="list-card" key={order.id as string}>
-              <div className="list-card-main">
-                <b><Link href={`/orders/${order.id as string}`}>{(itemById.get(order.item_id as string)?.title as string | undefined) ?? "Order"}</Link></b>
-                <p>Buyer {who(order.buyer_id as string)} · seller {who(order.seller_id as string)} · N${Math.round(Number(order.amount_cents) / 100).toLocaleString("en-ZA")}</p>
-                <small>{formatWindhoek(order.created_at as string)}</small>
-              </div>
-            </li>
-          ))}
+          {disputeRows.map((row) => {
+            const order = orderById.get(row.order_id as string);
+            if (!order) return null;
+            return (
+              <li className="list-card admin-card" key={row.order_id as string}>
+                <div className="list-card-main">
+                  <b><Link href={`/orders/${order.id}`}>{(itemById.get(order.item_id)?.title as string | undefined) ?? "Order"}</Link> · {(row.reason as string).replaceAll("_", " ")}</b>
+                  <p>Buyer {who(order.buyer_id)} · seller {who(order.seller_id)} · N${Math.round(Number(order.amount_cents) / 100).toLocaleString("en-ZA")} · opened by {who(row.opened_by as string)}</p>
+                  <p className="admin-quote">Buyer: {(row.buyer_statement as string | null) ?? "no statement yet"}</p>
+                  <p className="admin-quote">Seller: {(row.seller_statement as string | null) ?? "no statement yet"}</p>
+                  <small>{formatWindhoek(row.created_at as string)}. Read the chat and the listing photos before deciding.</small>
+                </div>
+                <DisputeDecision orderId={order.id} completed={order.status === "completed"} />
+              </li>
+            );
+          })}
         </ul>
 
         <h2 className="list-heading">Recent actions</h2>

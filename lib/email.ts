@@ -26,6 +26,8 @@ function copyFor(kind: string, payload: Record<string, unknown>): Copy | null {
       const when = typeof payload.meetup_at === "string" ? formatWindhoek(payload.meetup_at, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "soon";
       return { subject: "Reminder: your meet-up is coming up", line: `Your meet-up is at ${when} (Windhoek time). Cancelling less than 2 hours before is no longer possible, so message the other person if plans change.`, path: order, cta: "Open order" };
     }
+    case "dispute_opened": return { subject: "A problem was reported on an order", line: "Open the order to read what was reported and give your side.", path: order, cta: "Open order" };
+    case "dispute_decided": return { subject: "A decision on your reported order", line: "Our team has decided. Open the order to read the reasons.", path: order, cta: "Read the decision" };
     case "order_completed": return { subject: "Your order is complete", line: "Thank you for trading on Rehang. Leave a short review to help others.", path: order, cta: "Leave a review" };
     case "order_cancelled": return { subject: "An order was cancelled", line: "One of your orders was cancelled. Open it to see the reason.", path: order, cta: "Open order" };
     case "cancel_agreement_requested": return { subject: "A request to cancel an order", line: "The other person asked to cancel together. Please accept or decline.", path: order, cta: "Open order" };

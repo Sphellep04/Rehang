@@ -167,11 +167,12 @@ select ok((select count(*) = 1 from public.notifications where user_id = 'cccccc
 select set_config('tap.code', (select code from public.order_meetup_codes where order_id = (select id from public.orders where item_id = 'dddddddd-0000-0000-0000-000000000001')), true);
 select public.tap_as('cccccccc-0000-0000-0000-00000000000a');
 set local role authenticated;
-select ok((select result = 'locked' from public.complete_meetup((select id from public.orders where item_id = 'dddddddd-0000-0000-0000-000000000001'), current_setting('tap.code'))), 'a locked order refuses even the correct code');
+select ok(public.tap_err(format($$select * from public.complete_meetup(%L, %L)$$, (select id from public.orders where item_id = 'dddddddd-0000-0000-0000-000000000001'), current_setting('tap.code'))) = 'order_not_ready', 'a locked order goes to the moderators and refuses even the correct code');
 reset role;
 
 -- Support unlocks it (as the superuser), then the real code completes the order.
-update public.orders set code_attempts = 0 where item_id = 'dddddddd-0000-0000-0000-000000000001';
+delete from public.disputes where order_id = (select id from public.orders where item_id = 'dddddddd-0000-0000-0000-000000000001');
+update public.orders set code_attempts = 0, status = 'awaiting_meetup' where item_id = 'dddddddd-0000-0000-0000-000000000001';
 select public.tap_as('cccccccc-0000-0000-0000-00000000000a');
 set local role authenticated;
 select ok((select result = 'completed' from public.complete_meetup((select id from public.orders where item_id = 'dddddddd-0000-0000-0000-000000000001'), current_setting('tap.code'))), 'the correct code completes the order');
@@ -286,7 +287,7 @@ update public.order_events set created_at = now() - interval '25 hours' where ev
 select ok((public.process_order_timers() ->> 'strikes_issued')::int = 1, 'the timer issues one no-show strike');
 select ok((select status = 'cancelled' and cancel_reason = 'no_show' from public.orders where item_id = 'dddddddd-0000-0000-0000-000000000007'), 'an undisputed no-show cancels the order');
 select ok((select count(*) = 1 from public.strikes where user_id = 'cccccccc-0000-0000-0000-00000000000c' and reason = 'no_show'), 'the absent buyer gets the strike');
-select ok((select status = 'awaiting_meetup' from public.orders where item_id = 'dddddddd-0000-0000-0000-000000000008'), 'a disputed no-show is left for a moderator');
+select ok((select status = 'disputed' and exists (select 1 from public.disputes d where d.order_id = orders.id and d.reason = 'no_show') from public.orders where item_id = 'dddddddd-0000-0000-0000-000000000008'), 'a disputed no-show is left for a moderator');
 select ok((select count(*) = 1 from public.notifications where user_id = 'cccccccc-0000-0000-0000-00000000000e' and kind = 'no_show_disputed'), 'moderators are told about the disputed no-show');
 
 -- Timers -------------------------------------------------------------------------------------
