@@ -555,3 +555,7 @@ a.plain-button:hover { color: var(--coral-dark); }
 .order-form #meet-code { font-size: 20px; letter-spacing: .3em; text-align: center; }
 .order-actions > .button { width: 100%; max-width: 100%; white-space: normal; text-align: center; }
 .list-card + .report-box, .report-box { margin-bottom: 14px; }
+
+.mini-thumb { flex: none; width: 56px; height: 68px; display: grid; place-items: center; overflow: hidden; background: #efe9df; color: var(--coral); }
+.mini-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.list-card .mini-thumb + .list-card-main { flex: 1; }

@@ -38,6 +38,7 @@ function describe(kind: string, payload: Record<string, unknown>): Note {
     case "no_show_disputed": return { text: "A no-show report was disputed and needs review.", href: order };
     case "code_locked": return { text: "An order was locked after too many wrong codes.", href: order };
     case "strike_issued": return { text: "A strike was added to your account. Too many strikes pause trading.", href: "/orders" };
+    case "price_drop": return { text: `Price drop on ${typeof payload.title === "string" ? payload.title : "an item you saved"}.`, href: typeof payload.item_id === "string" ? `/item/${payload.item_id}` : "/saved" };
     case "item_removed": return { text: "One of your listings was removed by our team after a report.", href: "/terms" };
     case "account_action": return { text: "Our team has limited your account after a report. Check the terms for how to appeal.", href: "/terms" };
     case "verification_approved": return { text: "Your ID is verified. Your buying limits are lifted.", href: "/verify" };

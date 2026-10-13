@@ -11,6 +11,7 @@ type Props = {
 };
 
 const accountLinks = [
+  { href: "/my-listings", label: "My listings" },
   { href: "/inbox", label: "Messages" },
   { href: "/offers", label: "Offers" },
   { href: "/orders", label: "Orders" },

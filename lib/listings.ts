@@ -33,7 +33,7 @@ export type Listing = {
   verified: boolean;
   trusted: boolean;
   town: string;
-  status: "active" | "reserved" | "sold";
+  status: "draft" | "awaiting_verification" | "active" | "reserved" | "sold" | "removed";
   publishedAt: string | null;
   isExample: boolean;
 };
@@ -128,7 +128,7 @@ type ItemRow = {
   description: string | null;
   condition: Condition;
   price_cents: number;
-  status: "active" | "reserved" | "sold";
+  status: "draft" | "awaiting_verification" | "active" | "reserved" | "sold" | "removed";
   published_at: string | null;
   category_id: number;
   size_id: number;
@@ -262,4 +262,19 @@ export async function listingsForSeller(supabase: SupabaseClient, sellerId: stri
 
 export function formatPrice(amount: number) {
   return `N$${amount.toLocaleString("en-ZA")}`;
+}
+
+/** Every listing the signed-in seller owns, in any status. Row security limits this to the owner. */
+export async function myListings(supabase: SupabaseClient, sellerId: string): Promise<(Listing & { removedReason: string | null })[]> {
+  const { data, error } = await supabase
+    .from("items")
+    .select(`${ITEM_COLUMNS},removed_reason`)
+    .eq("seller_id", sellerId)
+    .order("created_at", { ascending: false })
+    .limit(200);
+  if (error || !data) return [];
+  const rows = data as unknown as (ItemRow & { removed_reason: string | null })[];
+  const listings = await hydrateListings(supabase, rows);
+  const reason = new Map(rows.map((row) => [row.id, row.removed_reason]));
+  return listings.map((listing) => ({ ...listing, removedReason: reason.get(listing.id) ?? null }));
 }
