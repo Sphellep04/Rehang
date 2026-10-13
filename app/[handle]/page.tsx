@@ -14,6 +14,7 @@ import { BlockButton } from "../_components/block-button";
 import { ReportButton } from "../_components/report-button";
 import { ListingCard } from "../_components/listing-card";
 import { SiteHeader } from "../_components/site-header";
+import { Stars } from "../_components/stars";
 
 const HANDLE_PATTERN = /^[a-z0-9_]{3,20}$/;
 
@@ -58,7 +59,7 @@ async function ShopContent({ params }: { params: PageProps<"/[handle]">["params"
   const signedIn = viewerId !== null;
   const isOwner = viewerId === sellerId;
 
-  const [statsResult, active, sold, followResult, blockResult] = await Promise.all([
+  const [statsResult, active, sold, followResult, blockResult, ratingResult, reviewsResult] = await Promise.all([
     supabase.rpc("shop_stats", { p_seller: sellerId }).maybeSingle(),
     listingsForSeller(supabase, sellerId, "active"),
     listingsForSeller(supabase, sellerId, "sold"),
@@ -68,7 +69,16 @@ async function ShopContent({ params }: { params: PageProps<"/[handle]">["params"
     viewerId && !isOwner
       ? supabase.from("blocks").select("blocked_id").eq("blocked_id", sellerId).maybeSingle()
       : Promise.resolve({ data: null }),
+    supabase.rpc("rating_summary", { p_user: sellerId }).maybeSingle(),
+    supabase.from("reviews").select("id,reviewer_id,rating,comment,created_at").eq("reviewee_id", sellerId).order("created_at", { ascending: false }).limit(10),
   ]);
+  const rating = (ratingResult.data ?? { average: null, review_count: 0 }) as { average: number | null; review_count: number };
+  const reviews = reviewsResult.data ?? [];
+  const reviewerIds = [...new Set(reviews.map((review) => review.reviewer_id as string))];
+  const { data: reviewers } = reviewerIds.length
+    ? await supabase.from("public_profiles").select("id,display_name,handle").in("id", reviewerIds)
+    : { data: [] };
+  const reviewerById = new Map((reviewers ?? []).map((person) => [person.id as string, person]));
 
   const stats = (statsResult.data ?? { follower_count: 0, active_count: 0, sold_count: 0 }) as {
     follower_count: number; active_count: number; sold_count: number;
@@ -89,6 +99,7 @@ async function ShopContent({ params }: { params: PageProps<"/[handle]">["params"
         <div className="shop-hero-body">
           <p className="eyebrow">@{handle}{profile.town ? ` · ${profile.town}` : ""}</p>
           <h1>{name}</h1>
+          <p className="shop-rating"><Stars value={rating.average === null ? null : Number(rating.average)} count={Number(rating.review_count)} /></p>
           <p className="shop-badges">
             {profile.verification_level === "level2" && <span className="badge badge-green">Verified seller</span>}
             {profile.is_trusted_seller && <span className="badge badge-green">Trusted seller</span>}
@@ -125,6 +136,24 @@ async function ShopContent({ params }: { params: PageProps<"/[handle]">["params"
           <div className="empty-state"><span>♡</span><h3>Nothing listed right now.</h3><p>{isOwner ? "Add your first item to open your shop." : "Follow this shop to see new pieces first."}</p></div>
         )}
       </section>
+
+      {reviews.length > 0 && (
+        <section className="shop-section">
+          <div className="section-heading"><div><p className="eyebrow">WHAT BUYERS AND SELLERS SAY</p><h2>Recent <em>reviews.</em></h2></div></div>
+          <ul className="review-list">
+            {reviews.map((review) => {
+              const person = reviewerById.get(review.reviewer_id as string);
+              return (
+                <li key={review.id as string}>
+                  <Stars value={review.rating as number} count={1} />
+                  {review.comment && <p>{review.comment as string}</p>}
+                  <small>{person ? `${person.display_name as string} · ` : ""}{new Date(review.created_at as string).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</small>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {sold.length > 0 && (
         <section className="shop-section shop-sold">

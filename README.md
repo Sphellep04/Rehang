@@ -539,7 +539,7 @@ Each milestone should end with something usable on a phone.
 - [x] Email and password sign-in, sign-up, confirmation link and password reset with Supabase SSR session handling (replaces phone OTP)
 - [x] Add profile creation on signup and profile completion with name, handle, town and draft terms consent
 - [ ] Connect Resend as the SMTP sender (settings are in `supabase/config.toml`) and test confirmation and reset emails end to end
-- [ ] Add profile photo. Done: Level 1 is granted when the email is confirmed
+- [x] Add profile photo at `/account`. Level 1 is granted when the email is confirmed (a photo is not required yet)
 - [x] Profile and public shop page at `/[handle]`
 - [ ] ID plus live selfie upload to the private bucket (Level 2), and the ID number hash check. Done: upload, legal name, ID number hash check (keyed hash, one ID per account), review and approval at `/verify` and `/admin`
 - [ ] `verification_level` gating in RLS and in the UI. Limits read from `app_config`
@@ -571,7 +571,7 @@ Each milestone should end with something usable on a phone.
 - [ ] Meet-up spots and time slots. Seller confirmation within 24h. Done: propose, confirm and hours checks. Still to do: confirm the real spot addresses and activate them (seeded spots are inactive)
 - [x] Meet-up code: buyer-only display, validity window, lockout after 5 attempts
 - [ ] Timers, cancellations, "they didn't show", strikes ladder. Done in SQL and the order page. Still to do: enable pg_cron on the hosted project so `process_order_timers` runs
-- [ ] Reviews from both sides after completion
+- [x] Reviews from both sides after completion (7 day window; ratings on shop pages, item pages and orders)
 - [ ] "Report a problem" on orders
 
 #### M5: Trust and moderation (February 2027)

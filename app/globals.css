@@ -500,3 +500,22 @@ a.plain-button:hover { color: var(--coral-dark); }
 .verify-steps li.done span { border-color: #b9d9c6; background: #eef7f1; color: #1f6a41; }
 .verify-steps li.active { color: var(--ink); }
 .verify-steps li.active span { border-color: var(--coral); color: var(--coral-dark); }
+
+/* Reviews and account */
+.stars { display: inline-flex; align-items: baseline; gap: 5px; color: var(--coral); font-size: 12px; }
+.stars b { color: var(--ink); font-size: 11px; }
+.stars small { color: var(--muted); font-size: 10px; }
+.stars-empty { color: var(--muted); font-size: 10px; }
+.shop-rating { margin: 6px 0 0; }
+.item-seller small + .stars { display: flex; margin-top: 2px; }
+.star-picker { display: flex; gap: 4px; }
+.star-picker button { padding: 0 2px; border: 0; background: transparent; color: #cfc6b8; cursor: pointer; font-size: 28px; line-height: 1; }
+.star-picker button.on { color: var(--coral); }
+.order-reviews { display: grid; gap: 10px; margin: 16px 0; }
+.review-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.review-list li { display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--line); background: var(--white); }
+.review-list p { margin: 0; font-size: 11px; line-height: 1.5; }
+.review-list small { color: var(--muted); font-size: 10px; }
+.photo-form-row { display: flex; align-items: center; gap: 16px; }
+.photo-form-avatar { width: 72px; height: 72px; flex: none; }
+.photo-form-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }

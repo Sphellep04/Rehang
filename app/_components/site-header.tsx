@@ -28,6 +28,7 @@ export function SiteHeader({ signedIn, query = "" }: { signedIn: boolean; query?
             <Link className="plain-button" href="/offers">Offers</Link>
             <Link className="plain-button" href="/orders">Orders</Link>
             <Link className="plain-button" href="/notifications" aria-label="Notifications">Updates</Link>
+            <Link className="plain-button" href="/account">Account</Link>
             <form action={signOut}><button className="plain-button header-signout" type="submit">Sign out</button></form>
           </>
         ) : (

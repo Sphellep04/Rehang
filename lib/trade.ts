@@ -52,6 +52,7 @@ const messages: Record<string, string> = {
   invalid_id_number: "That ID number doesn't look right.",
   invalid_legal_name: "Enter your full name as it appears on your ID.",
   id_already_used: "This ID is already linked to another Rehang account. If that is a mistake, contact support.",
+  invalid_photo: "That photo could not be used. Please upload it again.",
   invalid_upload: "Those files didn't upload properly. Please try again.",
   verification_already_pending: "Your documents are already being reviewed.",
   already_verified: "You're already verified.",

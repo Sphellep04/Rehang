@@ -10,6 +10,8 @@ import { currentTime, formatWindhoek, orderStatusLabel } from "@/lib/trade";
 import { PageLoading } from "../../_components/page-loading";
 import { SiteHeader } from "../../_components/site-header";
 import { OrderActions, type Spot } from "./order-actions";
+import { ReviewForm } from "./review-form";
+import { Stars } from "../../_components/stars";
 
 export const metadata: Metadata = { title: "Order | Rehang" };
 
@@ -40,6 +42,7 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
     .maybeSingle();
   if (!order) notFound();
 
+  const now = currentTime();
   const role = order.buyer_id === viewerId ? "buyer" : order.seller_id === viewerId ? "seller" : null;
   if (!role) notFound();
   const otherId = role === "buyer" ? order.seller_id : order.buyer_id;
@@ -57,11 +60,16 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
     ? await supabase.from("meetup_spots").select("id,name,address").eq("town_id", item.town_id).eq("active", true).order("name")
     : { data: [] };
 
+  const { data: reviewRows } = order.status === "completed"
+    ? await supabase.from("reviews").select("reviewer_id,rating,comment").eq("order_id", id)
+    : { data: [] };
+  const myReview = (reviewRows ?? []).find((row) => row.reviewer_id === viewerId);
+  const theirReview = (reviewRows ?? []).find((row) => row.reviewer_id !== viewerId);
+
   const open = order.status === "awaiting_meetup";
   const confirmed = Boolean(order.meetup_confirmed_at);
   const stage = confirmed ? "confirmed" : order.meetup_at ? "awaiting_confirmation" : "needs_meetup";
 
-  const now = currentTime();
   const eventList = events ?? [];
   const reportedBy = (who: "me" | "other") => eventList.some((e) => e.event === "no_show_reported" && (who === "me" ? e.actor_id === viewerId : e.actor_id !== viewerId));
   const disputed = eventList.some((e) => e.event === "no_show_disputed");
@@ -94,6 +102,17 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
         {order.status === "cancelled" && <p className="trade-hint">This order was cancelled{order.cancelled_at ? ` on ${formatWindhoek(order.cancelled_at)}` : ""}.</p>}
         {order.status === "disputed" && <p className="trade-hint">This order is locked while our team reviews it. We will message you both.</p>}
         {disputed && open && <p className="trade-hint">A no-show report is under review.</p>}
+
+        {order.status === "completed" && (
+          <div className="order-reviews">
+            {myReview
+              ? <p className="trade-hint">Your review: <Stars value={myReview.rating as number} count={1} /> {myReview.comment ? `“${myReview.comment}”` : ""}</p>
+              : order.completed_at && now <= new Date(order.completed_at as string).getTime() + 7 * 24 * 3600 * 1000
+                ? <ReviewForm orderId={order.id} revieweeId={otherId} revieweeName={otherName} />
+                : <p className="trade-hint">The 7 day window for reviews has closed.</p>}
+            {theirReview && <p className="trade-hint">{otherName} reviewed you: <Stars value={theirReview.rating as number} count={1} /> {theirReview.comment ? `“${theirReview.comment}”` : ""}</p>}
+          </div>
+        )}
 
         {open && (
           <dl className="order-facts">

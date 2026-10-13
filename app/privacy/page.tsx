@@ -13,11 +13,11 @@ export default function PrivacyPage() {
         <h2>Information we use</h2>
         <p>Rehang uses your email address for sign-in, account security and password resets. Your public profile can show your handle, display name, photo, town and bio. Listings, messages, offers, orders and reviews are used to operate the marketplace and resolve reports.</p>
         <h2>Private information</h2>
-        <p>Your email, legal name and identity documents are not shown to other users. ID images are intended to be stored privately, accessible only to moderators for verification, and deleted within 30 days of a decision, subject to legal review.</p>
+        <p>Your email, legal name and identity documents are not shown to other users. ID and selfie photos are stored privately, can be opened only by moderators to check your identity, and are deleted 7 days after a decision. We keep a one-way scrambled version of your ID number (not the number itself) so that one person cannot open several accounts, and the full name you gave us for verification. We do not use face-recognition software.</p>
         <h2>Service providers</h2>
-        <p>Rehang uses providers for hosting, database, SMS, error monitoring and analytics. If protected payments are introduced, a licensed payment partner will process them. Rehang does not store card numbers.</p>
+        <p>Rehang uses providers for hosting, database, sending emails, error monitoring and analytics. If protected payments are introduced, a licensed payment partner will process them. Rehang does not store card numbers.</p>
         <h2>Your choices</h2>
-        <p>The full policy describes how to request access, correction, download or deletion of your data, and how long different records are kept. Retention periods and contact details still require review and confirmation.</p>
+        <p>The full policy describes how to request access, correction, download or deletion of your data (you can ask us at any time to delete your account), and how long different records are kept. Retention periods and contact details still require review and confirmation.</p>
         <p className="policy-note">This development preview is not the complete, lawyer-reviewed Privacy Policy. Do not use it as a public legal notice until review is complete.</p>
         <p><Link href="/terms">Read the draft Terms of Use</Link></p>
       </article>

@@ -14,6 +14,7 @@ import { ListingCard } from "../../_components/listing-card";
 import { MessageSellerButton } from "../../_components/message-seller-button";
 import { ReportButton } from "../../_components/report-button";
 import { SaveButton } from "../../_components/save-button";
+import { Stars } from "../../_components/stars";
 import { TradePanel } from "../../_components/trade-panel";
 import { SiteHeader } from "../../_components/site-header";
 
@@ -49,7 +50,7 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
   const signedIn = viewerId !== null;
   const isOwner = viewerId === listing.sellerId;
 
-  const [favouriteCount, saved, followResult, more, offerConfig] = await Promise.all([
+  const [favouriteCount, saved, followResult, more, offerConfig, ratingResult] = await Promise.all([
     supabase.rpc("item_favourite_count", { p_item: listing.id }),
     signedIn ? savedIdsFor(supabase, [listing.id]) : Promise.resolve(new Set<string>()),
     signedIn && !isOwner
@@ -57,7 +58,9 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
       : Promise.resolve({ data: null }),
     listingsForSeller(supabase, listing.sellerId, "active"),
     supabase.from("app_config").select("value").eq("key", "minimum_offer_percent").maybeSingle(),
+    supabase.rpc("rating_summary", { p_user: listing.sellerId }).maybeSingle(),
   ]);
+  const rating = (ratingResult.data ?? { average: null, review_count: 0 }) as { average: number | null; review_count: number };
   const minimumPercent = Number(offerConfig.data?.value ?? 60) || 60;
 
   const others = more.filter((candidate) => candidate.id !== listing.id).slice(0, 3);
@@ -107,6 +110,7 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
               <span>
                 <b>{listing.seller}</b>
                 <small>{listing.verified ? "Verified seller" : "Seller"}{listing.trusted ? " · Trusted" : ""}</small>
+                <Stars value={rating.average === null ? null : Number(rating.average)} count={Number(rating.review_count)} label="New seller" />
               </span>
             </Link>
             {!isOwner && <FollowButton sellerId={listing.sellerId} sellerName={listing.seller} initialFollowing={Boolean(followResult.data)} signedIn={signedIn} />}
