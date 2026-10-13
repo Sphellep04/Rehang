@@ -8,7 +8,7 @@ The name comes from the hanger: a garment is "hung again" and gets a second life
 
 | | |
 |---|---|
-| **Status** | Phase 0: Validate (no code yet) |
+| **Status** | Phase 0: Validate · M0 app and database foundation (sample data only) |
 | **Plan version** | v2, 29 September 2026 (v1,  See [changes](#21-changes-from-the-original-plan)) |
 | **Owner** | Phellep Shapopi |
 | **Launch market** | Windhoek, Namibia |
@@ -478,7 +478,24 @@ rehang/
 
 ### Local development
 
-To be written at milestone M0. Expected prerequisites: Node.js LTS, Docker (for the Supabase local stack), the Supabase CLI and a Vercel account. Workflow and CI: [testing and deployment](docs/engineering/testing-and-deployment.md).
+Prerequisites: Node.js LTS and npm. From the repository root:
+
+```sh
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`. Run `npm run lint` and `npm run build` before sharing changes. The home feed still uses sample listings; authentication, live inventory and messaging are not connected yet.
+
+For the local database (requires Docker and the Supabase CLI):
+
+```sh
+npx supabase start
+npx supabase db reset
+npx supabase test db
+```
+
+The foundation migration seeds Windhoek and the initial non-secret app configuration. Workflow and CI: [testing and deployment](docs/engineering/testing-and-deployment.md).
 
 ---
 
@@ -506,13 +523,14 @@ Each milestone should end with something usable on a phone.
 
 #### M0: Foundations (early November 2026)
 
-- [ ] Create the Next.js app with TypeScript, Tailwind CSS and ESLint
+- [x] Create the Next.js app with TypeScript, Tailwind CSS and ESLint
 - [ ] Create Supabase projects (staging and production) and link the CLI
 - [ ] Connect Vercel with preview deploys per pull request
 - [ ] GitHub Actions CI: typecheck, lint, unit tests, pgTAP, Playwright ([setup](docs/engineering/testing-and-deployment.md#ci-github-actions))
 - [ ] PWA manifest, icons, brand colours ([brand guide](docs/brand/brand-guide.md))
 - [ ] Sentry, PostHog and uptime check wired in
-- [ ] First migration: enums, `users`, `towns`, `app_config`. Seed data
+- [x] Write the first migration for enums, `users`, `towns`, and `app_config`, with initial seed rows
+- [ ] Apply the migration locally and pass the pgTAP tests
 
 #### M1: Accounts and verification (November 2026)
 
@@ -1009,7 +1027,7 @@ The original PDF plan (v1, 29 September 2026) had some conflicts and gaps. This 
 1. Read [section 20, Decisions](#20-decisions) and confirm or change each proposed answer.
 2. Work through [Next 30 days](#18-next-30-days), ticking boxes in this README as you go. Everything needed for Weeks 1–3 is in [`docs/phase-0/`](docs/phase-0/).
 3. On 27 October, run the [go or no-go checks](#19-go-or-no-go-checks).
-4. If go, start [milestone M0](#milestones-and-task-checklist) using the [data model](docs/engineering/data-model.md) and the [testing and deployment setup](docs/engineering/testing-and-deployment.md), then write the Local development section.
+4. If go, finish [milestone M0](#milestones-and-task-checklist) using the [data model](docs/engineering/data-model.md) and the [testing and deployment setup](docs/engineering/testing-and-deployment.md).
 5. Update the [financial model](docs/business/financial-model.md) monthly with actual figures.
 
 ---
