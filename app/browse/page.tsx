@@ -20,6 +20,7 @@ function pageHref(filters: ListingFilters, page: number) {
   if (filters.q) params.set("q", filters.q);
   if (filters.category) params.set("category", filters.category);
   if (filters.sizeGroup) params.set("size", filters.sizeGroup);
+  if (filters.town) params.set("town", filters.town);
   if (filters.condition) params.set("condition", filters.condition);
   if (filters.minPrice !== undefined) params.set("min", String(filters.minPrice));
   if (filters.maxPrice !== undefined) params.set("max", String(filters.maxPrice));
@@ -44,17 +45,19 @@ async function BrowseContent({ searchParams }: { searchParams: PageProps<"/brows
   const viewerId = await getViewerId();
   const signedIn = viewerId !== null;
 
-  const [result, categories, sizeGroups] = supabase
+  const [result, categories, sizeGroups, towns] = supabase
     ? await Promise.all([
         searchListings(supabase, filters),
         supabase.from("categories").select("slug,name,position").is("parent_id", null).eq("allowed", true).order("position"),
         supabase.from("size_groups").select("label,position").order("position"),
+        supabase.from("towns").select("name").order("name"),
       ])
-    : [null, { data: [] }, { data: [] }];
+    : [null, { data: [] }, { data: [] }, { data: [] }];
 
   const saved = supabase && result ? await savedIdsFor(supabase, result.listings.map((listing) => listing.id)) : new Set<string>();
   const sizeLabels = [...new Set((sizeGroups.data ?? []).map((group) => group.label as string))];
-  const hasFilters = Boolean(filters.q || filters.category || filters.sizeGroup || filters.condition || filters.minPrice !== undefined || filters.maxPrice !== undefined);
+  const townNames = (towns.data ?? []).map((town) => town.name as string);
+  const hasFilters = Boolean(filters.q || filters.category || filters.town || filters.sizeGroup || filters.condition || filters.minPrice !== undefined || filters.maxPrice !== undefined);
 
   return (
     <main>
@@ -62,7 +65,7 @@ async function BrowseContent({ searchParams }: { searchParams: PageProps<"/brows
       <section className="browse">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">WINDHOEK</p>
+            <p className="eyebrow">{(filters.town ?? "Namibia").toUpperCase()}</p>
             <h1 className="browse-title">{filters.q ? <>Results for <em>“{filters.q}”</em></> : <>Browse <em>everything.</em></>}</h1>
           </div>
           <p>{result?.total !== null && result ? `${result.total} ${result.total === 1 ? "piece" : "pieces"}` : ""}</p>
@@ -80,6 +83,12 @@ async function BrowseContent({ searchParams }: { searchParams: PageProps<"/brows
             <select name="size" defaultValue={filters.sizeGroup ?? ""}>
               <option value="">Any</option>
               {sizeLabels.map((label) => <option key={label} value={label}>{label}</option>)}
+            </select>
+          </label>
+          <label>Town
+            <select name="town" defaultValue={townNames.find((name) => name.toLowerCase() === filters.town?.toLowerCase()) ?? ""}>
+              <option value="">All towns</option>
+              {townNames.map((name) => <option key={name} value={name}>{name}</option>)}
             </select>
           </label>
           <label>Condition

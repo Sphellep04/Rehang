@@ -32,6 +32,10 @@ describe("parseFilters", () => {
     expect(filters.condition).toBeUndefined();
     expect(filters.page).toBe(1);
   });
+  it("reads the town and trims it", () => {
+    expect(parseFilters({ town: "  Swakopmund " }).town).toBe("Swakopmund");
+    expect(parseFilters({}).town).toBeUndefined();
+  });
   it("reads valid values", () => {
     const filters = parseFilters({ q: "denim", condition: "good", sort: "price_asc", page: "3" });
     expect(filters).toMatchObject({ q: "denim", condition: "good", sort: "price_asc", page: 3 });

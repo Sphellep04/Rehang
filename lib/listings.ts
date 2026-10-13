@@ -55,6 +55,7 @@ export const filtersSchema = z.object({
   q: optionalText(80),
   category: optionalText(60),
   sizeGroup: optionalText(20),
+  town: optionalText(40),
   condition: z.preprocess(
     (value) => (typeof value === "string" && (CONDITIONS as readonly string[]).includes(value) ? value : undefined),
     z.enum(CONDITIONS).optional(),
@@ -87,6 +88,7 @@ export function parseFilters(params: URLSearchParams | Record<string, string | s
     q: read("q"),
     category: read("category"),
     sizeGroup: read("size"),
+    town: read("town"),
     condition: read("condition"),
     minPrice: read("min"),
     maxPrice: read("max"),
@@ -188,15 +190,16 @@ export type ListingPage = { listings: Listing[]; hasMore: boolean; total: number
 
 /** Browse and search active listings. RLS decides what the caller may see. */
 export async function searchListings(supabase: SupabaseClient, filters: ListingFilters): Promise<ListingPage | null> {
-  const [categoriesResult, sizesResult] = await Promise.all([
+  const [categoriesResult, sizesResult, townResult] = await Promise.all([
     filters.category ? supabase.from("categories").select("id,parent_id,name,slug") : Promise.resolve({ data: null }),
     filters.sizeGroup
       ? supabase.from("sizes").select("id,size_groups!inner(label)").eq("size_groups.label", filters.sizeGroup)
       : Promise.resolve({ data: null }),
+    filters.town ? supabase.from("towns").select("id").ilike("name", filters.town.replace(/[%_\\]/g, "")).limit(1) : Promise.resolve({ data: null }),
   ]);
 
   // A failed lookup is an outage, not "no matches".
-  if (("error" in categoriesResult && categoriesResult.error) || ("error" in sizesResult && sizesResult.error)) return null;
+  if (("error" in categoriesResult && categoriesResult.error) || ("error" in sizesResult && sizesResult.error) || ("error" in townResult && townResult.error)) return null;
 
   let categoryIds: number[] | null = null;
   if (filters.category) {
@@ -210,6 +213,13 @@ export async function searchListings(supabase: SupabaseClient, filters: ListingF
     if (sizeIds.length === 0) return { listings: [], hasMore: false, total: 0 };
   }
 
+  let townId: number | null = null;
+  if (filters.town) {
+    const found = ((townResult.data ?? []) as { id: number }[])[0];
+    if (!found) return { listings: [], hasMore: false, total: 0 };
+    townId = found.id;
+  }
+
   const base = filters.q
     ? supabase.rpc("items_search", { p_query: filters.q }, { count: "exact" }).select(ITEM_COLUMNS)
     : supabase.from("items").select(ITEM_COLUMNS, { count: "exact" });
@@ -217,6 +227,7 @@ export async function searchListings(supabase: SupabaseClient, filters: ListingF
   let query = base.eq("status", "active");
   if (categoryIds) query = query.in("category_id", categoryIds);
   if (sizeIds) query = query.in("size_id", sizeIds);
+  if (townId !== null) query = query.eq("town_id", townId);
   if (filters.condition) query = query.eq("condition", filters.condition);
   if (filters.minPrice !== undefined) query = query.gte("price_cents", Math.round(filters.minPrice * 100));
   if (filters.maxPrice !== undefined) query = query.lte("price_cents", Math.round(filters.maxPrice * 100));
