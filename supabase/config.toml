@@ -24,6 +24,9 @@ site_url = "http://127.0.0.1:3000"
 additional_redirect_urls = ["http://localhost:3000"]
 enable_signup = true
 jwt_expiry = 3600
+# No guest accounts and no linking of extra identities: every account is an email and password account.
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
 
 minimum_password_length = 10
 password_requirements = "letters_digits"
@@ -35,6 +38,8 @@ enable_signup = false
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
+# Changing a password needs a recent sign-in, so a stolen idle session cannot lock the owner out.
+secure_password_change = true
 enable_confirmations = true
 max_frequency = "60s"
 
@@ -60,3 +65,19 @@ content_path = "./supabase/templates/recovery.html"
 [auth.mfa.totp]
 enroll_enabled = true
 verify_enabled = true
+
+# Limits per IP address. These are the tighter, Rehang-specific values; the hosted project has the same settings under
+# Authentication, Rate limits. Sign-ups and sign-ins are the targets for password guessing and fake accounts.
+[auth.rate_limit]
+email_sent = 30
+sign_in_sign_ups = 15
+token_verifications = 15
+token_refresh = 150
+anonymous_users = 1
+
+# To add a bot check to sign-up and sign-in, create a Cloudflare Turnstile site, then uncomment and set the secret.
+# The sign-up and sign-in forms must also send the captcha token before this is switched on.
+# [auth.captcha]
+# enabled = true
+# provider = "turnstile"
+# secret = "env(TURNSTILE_SECRET)"

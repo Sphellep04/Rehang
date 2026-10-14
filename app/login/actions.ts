@@ -6,16 +6,24 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { emailSchema, passwordSchema, safeNext } from "@/lib/auth";
+import { siteUrl } from "@/lib/site";
 
 export type AuthState = { status: "idle" | "error" | "done"; message?: string };
 
 const notConfigured: AuthState = { status: "error", message: "Sign-in is not set up yet. Add the Supabase settings first." };
 
+/**
+ * The address put into confirmation and reset emails. It comes from NEXT_PUBLIC_SITE_URL, never from the request,
+ * because a forged Host header could otherwise make a reset email point at an attacker's site.
+ * Only local development, where no site address is set, falls back to the request.
+ */
 async function siteOrigin() {
+  if (process.env.NEXT_PUBLIC_SITE_URL) return siteUrl();
   const requestHeaders = await headers();
-  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
-  const protocol = requestHeaders.get("x-forwarded-proto") ?? (host?.startsWith("localhost") || host?.startsWith("127.") ? "http" : "https");
-  return `${protocol}://${host}`;
+  const host = requestHeaders.get("host") ?? "localhost:3000";
+  const local = host.startsWith("localhost") || host.startsWith("127.");
+  if (!local && process.env.NODE_ENV === "production") throw new Error("NEXT_PUBLIC_SITE_URL must be set in production.");
+  return `${local ? "http" : "https"}://${host}`;
 }
 
 export async function signIn(_previous: AuthState, formData: FormData): Promise<AuthState> {

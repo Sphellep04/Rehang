@@ -29,7 +29,7 @@ async function decode(file: File): Promise<ImageBitmap> {
   const looksHeic = /\.(heic|heif)$/i.test(file.name) || /image\/hei[cf]/i.test(file.type);
   if (looksHeic) {
     // iPhone photos. The converter is large, so it only loads when someone actually picks one.
-    const { heicTo, isHeic } = await import("heic-to/next");
+    const { heicTo, isHeic } = await import("heic-to/csp");
     if (await isHeic(file)) {
       try {
         return await heicTo({ blob: file, type: "bitmap" });

@@ -8,6 +8,13 @@ describe("safeNext", () => {
   it.each(["//evil.com", "https://evil.com", "/\\evil.com", "javascript:alert(1)", "", undefined, 42])("rejects %s", (value) => {
     expect(safeNext(value)).toBe("/");
   });
+  it.each(["/\t/evil.com", "/\n/evil.com", "/\r/evil.com", "/ /evil.com", "/\u0000/x", "/\u200b/x\u0085", "/" + "a".repeat(600)])("rejects hidden characters and very long values %#", (value) => {
+    expect(safeNext(value)).toBe("/");
+  });
+  it("still allows ordinary paths with queries and encoded characters", () => {
+    expect(safeNext("/browse?town=Windhoek&size=M")).toBe("/browse?town=Windhoek&size=M");
+    expect(safeNext("/item/abc%20def")).toBe("/item/abc%20def");
+  });
   it("uses the given fallback", () => {
     expect(safeNext("https://evil.com", "/browse")).toBe("/browse");
   });

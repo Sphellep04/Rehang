@@ -1,9 +1,21 @@
 import { z } from "zod";
 
-/** Only allow return paths inside this site, so a crafted link cannot send people elsewhere. */
+/**
+ * Only allow return paths inside this site, so a crafted link cannot send people elsewhere.
+ * Browsers silently remove tabs and line breaks inside a URL, so "/\t/evil.com" would become "//evil.com".
+ * Control characters and spaces are refused outright, and the path is parsed to confirm it stays on the same origin.
+ */
 export function safeNext(value: unknown, fallback = "/"): string {
-  if (typeof value !== "string") return fallback;
+  if (typeof value !== "string" || value.length > 512) return fallback;
   if (!value.startsWith("/") || value.startsWith("//") || value.includes("\\")) return fallback;
+  if (/[\u0000-\u0020\u007f-\u009f]/.test(value)) return fallback;
+  try {
+    const base = "https://rehang.invalid";
+    const parsed = new URL(value, base);
+    if (parsed.origin !== base) return fallback;
+  } catch {
+    return fallback;
+  }
   return value;
 }
 
