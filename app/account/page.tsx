@@ -9,6 +9,8 @@ import { getViewerId } from "@/lib/supabase/viewer";
 import { PageLoading } from "../_components/page-loading";
 import { SiteHeader } from "../_components/site-header";
 import { DeleteForm } from "./delete-form";
+import { DataSaverForm } from "./data-saver-form";
+import { dataSaverOn } from "@/lib/data-saver";
 import { EmailForm } from "./email-form";
 import { PhotoForm } from "./photo-form";
 
@@ -46,6 +48,7 @@ async function AccountContent() {
           <div><dt>Your shop</dt><dd><Link href={`/${me.handle as string}`}>rehang.na/{me.handle as string}</Link></dd></div>
         </dl>
         <PhotoForm userId={viewerId} currentUrl={me.photo_url as string | null} name={me.display_name as string} />
+        <DataSaverForm initiallyOn={await dataSaverOn()} />
         <EmailForm alerts={me.email_alerts !== false} digest={me.email_digest === true} />
         <div className="order-form">
           <h3>Your data</h3>

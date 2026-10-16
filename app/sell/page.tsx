@@ -36,11 +36,12 @@ async function SellContent() {
   const { data: claimsData } = await supabase.auth.getClaims();
   if (!claimsData?.claims.sub) redirect("/login");
 
-  const [{ data: categoryRows }, { data: sizes }, { data: towns }, { data: profile }] = await Promise.all([
+  const [{ data: categoryRows }, { data: sizes }, { data: towns }, { data: profile }, { data: brandRows }] = await Promise.all([
     supabase.from("categories").select("id,name,parent_id").eq("allowed", true).order("position"),
     supabase.from("sizes").select("id,system,value").order("system").order("value"),
     supabase.from("towns").select("id,name").eq("is_live", true).order("name"),
     supabase.from("users").select("terms_accepted_at,verification_level,town_id").eq("id", claimsData.claims.sub).maybeSingle(),
+    supabase.from("brands").select("name").order("name"),
   ]);
 
   if (!profile?.terms_accepted_at) redirect("/onboarding");
@@ -60,7 +61,8 @@ async function SellContent() {
         <div className="sell-heading">
           <p className="eyebrow">YOUR WINDHOEK SHOP</p>
           <h1>List an item.</h1>
-          <p>Start with clear photos and honest details. New listings save as drafts until the publishing flow is ready.</p>
+          <p>Start with clear photos and honest details.</p>
+          <p><Link href="/sell/clear-out">Clearing out a whole wardrobe? List many items at once, even without a signal.</Link></p>
         </div>
         <ListingForm
           categories={categories}
@@ -68,6 +70,7 @@ async function SellContent() {
           towns={(towns ?? []) as TownRow[]}
           defaultTownId={profile.town_id}
           verificationLevel={profile.verification_level}
+          brands={(brandRows ?? []).map((row) => row.name as string)}
         />
       </div>
     </main>

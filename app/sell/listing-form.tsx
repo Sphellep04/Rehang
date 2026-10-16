@@ -4,35 +4,30 @@ import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { listingProblem } from "@/lib/listing-rules";
+import { colorChoices, conditions, type CategoryOption, type SizeOption, type TownOption } from "@/lib/listing-options";
 import { tradeError } from "@/lib/trade";
 import { uploadEntries, type PhotoEntry } from "@/lib/photo-client";
 import { PhotoPicker } from "../_components/photo-picker";
 
-type CategoryOption = { id: number; name: string };
-type SizeOption = { id: number; system: string; value: string };
-type TownOption = { id: number; name: string };
 
-const conditions = [
-  ["new_with_tags", "New with tags"],
-  ["new_without_tags", "New without tags"],
-  ["very_good", "Very good"],
-  ["good", "Good"],
-  ["fair", "Fair"],
-] as const;
 
-const colorChoices = ["Black", "White", "Grey", "Beige", "Brown", "Red", "Pink", "Orange", "Yellow", "Green", "Blue", "Navy", "Purple", "Gold", "Silver", "Multi", "Print/pattern"];
+
+
 export function ListingForm({
   categories,
   sizes,
   towns,
   defaultTownId,
   verificationLevel,
+  brands = [],
 }: {
   categories: CategoryOption[];
   sizes: SizeOption[];
   towns: TownOption[];
   defaultTownId: number | null;
   verificationLevel: string;
+  brands?: string[];
 }) {
   const router = useRouter();
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
@@ -62,21 +57,9 @@ export function ListingForm({
     const brandText = String(formData.get("brand_text") ?? "").trim();
     const condition = String(formData.get("condition") ?? "");
     const price = Number(formData.get("price"));
-    const requiredKinds = ["front", "back", "label"];
 
-    if (title.length < 10 || title.length > 60) return setMessage("Title must be 10 to 60 characters.");
-    if (description.length > 500) return setMessage("Description must be 500 characters or fewer.");
-    if (!Number.isInteger(price) || price < 20 || price > 20000) return setMessage("Price must be a whole amount from N$20 to N$20,000.");
-    if (selectedColors.length < 1 || selectedColors.length > 2) return setMessage("Choose one or two colours.");
-    if (photos.length < 3 || photos.length > 8 || requiredKinds.some((kind) => !photos.some((photo) => photo.kind === kind))) {
-      return setMessage("Add front, back and care-label photos. Listings need 3 to 8 photos.");
-    }
-    if ((condition === "good" || condition === "fair") && !photos.some((photo) => photo.kind === "flaw")) {
-      return setMessage("Add a photo showing the item's wear or flaws.");
-    }
-    if (condition === "new_with_tags" && !photos.some((photo) => photo.kind === "tags")) {
-      return setMessage("Add a photo showing the original tags.");
-    }
+    const problem = listingProblem({ title, description, price, colourCount: selectedColors.length, condition, photoKinds: photos.map((photo) => photo.kind) });
+    if (problem) return setMessage(problem);
 
     setIsSaving(true);
     try {
@@ -152,7 +135,7 @@ export function ListingForm({
           <label htmlFor="listing-category">Category<select id="listing-category" name="category_id" required defaultValue=""><option value="" disabled>Choose a category</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
           <label htmlFor="listing-size">Size<select id="listing-size" name="size_id" required defaultValue=""><option value="" disabled>Choose a size</option>{sizes.map((size) => <option key={size.id} value={size.id}>{size.system.replaceAll("_", " ")} · {size.value}</option>)}</select></label>
           <label htmlFor="listing-condition">Condition<select id="listing-condition" name="condition" required defaultValue=""><option value="" disabled>Choose condition</option>{conditions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-          <label htmlFor="listing-brand">Brand <span>(optional)</span><input id="listing-brand" name="brand_text" maxLength={60} placeholder="Brand or leave blank" /></label>
+          <label htmlFor="listing-brand">Brand <span>(optional)</span><input id="listing-brand" name="brand_text" maxLength={60} list="brand-options" placeholder="Brand or leave blank" autoComplete="off" /><datalist id="brand-options">{brands.map((name) => <option key={name} value={name} />)}</datalist></label>
           <label className="field-span-two" htmlFor="listing-description">Description <span>(optional · 500 characters)</span><textarea id="listing-description" name="description" maxLength={500} placeholder="Fit, fabric, measurements or anything a buyer should know" /></label>
           <fieldset className="field-span-two color-field"><legend>Colour <span>(choose 1 or 2)</span></legend><div className="color-options">{colorChoices.map((color) => <label className="color-option" key={color}><input type="checkbox" checked={selectedColors.includes(color)} onChange={() => toggleColor(color)} /><span className="color-swatch" data-color={color.toLowerCase().replaceAll("/", "-")} />{color}</label>)}</div></fieldset>
           <label htmlFor="listing-price">Price in N$<input id="listing-price" name="price" type="number" min={20} max={20000} step={1} placeholder="250" required /></label>

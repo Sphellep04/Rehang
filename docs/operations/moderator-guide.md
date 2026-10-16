@@ -43,7 +43,7 @@ Review the account when **two or more** of these appear:
 - Several accounts from the same device or with the same ID hash
 - Many cancelled or no-show orders
 
-The system now raises these flags by itself and lists them under **Account flags** and **Listing flags** in `/admin`: a new account with three or more listings over N$1,000, two or more strikes in 90 days, contact details in three messages across two chats in a week, and photos that closely match another seller's. Items over N$1,500 also appear as **Brand checks**. Approving one adds a "Photos reviewed" label, which is not a guarantee of authenticity. Changing the photos later removes the label.
+The system now raises these flags by itself and lists them under **Account flags** and **Listing flags** in `/admin`: a new account with three or more listings over N$1,000, two or more strikes in 90 days, contact details in three messages across two chats in a week, and photos that closely match another seller's. A listing priced under a quarter of the middle price for the same brand and type of item (once five similar listings exist) appears as **Price far below similar listings**. It can be an honest bargain, so look at the photos and the seller's history before acting. Several accounts on one device is not detected, because Rehang does not collect device fingerprints; the same ID hash is still caught at verification. Items over N$1,500 also appear as **Brand checks**. Approving one adds a "Photos reviewed" label, which is not a guarantee of authenticity. Changing the photos later removes the label.
 
 Actions: hold the listings → ask for extra photos (item with a handwritten note saying "Rehang" and the date) → re-verify → suspend if not satisfied.
 

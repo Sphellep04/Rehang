@@ -21,6 +21,7 @@ function pageHref(filters: ListingFilters, page: number) {
   if (filters.category) params.set("category", filters.category);
   if (filters.sizeGroup) params.set("size", filters.sizeGroup);
   if (filters.town) params.set("town", filters.town);
+  if (filters.brand) params.set("brand", filters.brand);
   if (filters.condition) params.set("condition", filters.condition);
   if (filters.minPrice !== undefined) params.set("min", String(filters.minPrice));
   if (filters.maxPrice !== undefined) params.set("max", String(filters.maxPrice));
@@ -45,19 +46,20 @@ async function BrowseContent({ searchParams }: { searchParams: PageProps<"/brows
   const viewerId = await getViewerId();
   const signedIn = viewerId !== null;
 
-  const [result, categories, sizeGroups, towns] = supabase
+  const [result, categories, sizeGroups, towns, brands] = supabase
     ? await Promise.all([
         searchListings(supabase, filters),
         supabase.from("categories").select("slug,name,position").is("parent_id", null).eq("allowed", true).order("position"),
         supabase.from("size_groups").select("label,position").order("position"),
         supabase.from("towns").select("name").order("name"),
+        supabase.from("brands").select("name,slug").order("name"),
       ])
-    : [null, { data: [] }, { data: [] }, { data: [] }];
+    : [null, { data: [] }, { data: [] }, { data: [] }, { data: [] }];
 
   const saved = supabase && result ? await savedIdsFor(supabase, result.listings.map((listing) => listing.id)) : new Set<string>();
   const sizeLabels = [...new Set((sizeGroups.data ?? []).map((group) => group.label as string))];
   const townNames = (towns.data ?? []).map((town) => town.name as string);
-  const hasFilters = Boolean(filters.q || filters.category || filters.town || filters.sizeGroup || filters.condition || filters.minPrice !== undefined || filters.maxPrice !== undefined);
+  const hasFilters = Boolean(filters.q || filters.category || filters.town || filters.brand || filters.sizeGroup || filters.condition || filters.minPrice !== undefined || filters.maxPrice !== undefined);
 
   return (
     <main>
@@ -91,6 +93,12 @@ async function BrowseContent({ searchParams }: { searchParams: PageProps<"/brows
               {townNames.map((name) => <option key={name} value={name}>{name}</option>)}
             </select>
           </label>
+          <label>Brand
+            <select name="brand" defaultValue={filters.brand?.toLowerCase() ?? ""}>
+              <option value="">Any brand</option>
+              {(brands.data ?? []).map((brand) => <option key={brand.slug as string} value={brand.slug as string}>{brand.name as string}</option>)}
+            </select>
+          </label>
           <label>Condition
             <select name="condition" defaultValue={filters.condition ?? ""}>
               <option value="">Any</option>
@@ -106,6 +114,7 @@ async function BrowseContent({ searchParams }: { searchParams: PageProps<"/brows
           <label>Sort
             <select name="sort" defaultValue={filters.sort}>
               <option value="newest">Recently added</option>
+              <option value="trusted">Trusted sellers first</option>
               <option value="price_asc">Price: low to high</option>
               <option value="price_desc">Price: high to low</option>
             </select>

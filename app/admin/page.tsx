@@ -153,16 +153,18 @@ async function AdminContent() {
             const detail = flag.detail as { matches_item?: string; distance?: number };
             const other = detail.matches_item ? itemById.get(detail.matches_item) : undefined;
             const brand = flag.reason === "brand_check";
+            const cheap = flag.reason === "price_low";
             return (
               <li className="list-card admin-card" key={flag.id as string}>
                 <div className="list-card-main">
-                  <b>{brand ? "Brand check (over N$1,500)" : "Photo matches another seller"}</b>
+                  <b>{brand ? "Brand check (over N$1,500)" : cheap ? "Price far below similar listings" : "Photo matches another seller"}</b>
                   <p>{item ? <Link href={`/item/${item.id as string}`}>{item.title as string}</Link> : "A listing"} by {item ? who(item.seller_id as string) : "unknown"}.
                     {brand ? " Compare the label, stitching and any serial photos with the brand's genuine items. Approving adds a Photos reviewed label, not a guarantee."
+                      : cheap ? " It is priced at under a quarter of the middle price for the same brand and type of item. That can be an honest bargain or a scam, so check the photos and the seller's history. Nothing has been hidden."
                       : <> It looks like {other ? <Link href={`/item/${other.id as string}`}>{other.title as string}</Link> : "another listing"}{other ? <> by {who(other.seller_id as string)}</> : null}. If it is a copy, report the newer listing from its page.</>}</p>
-                  <small>{formatWindhoek(flag.created_at as string)}{brand ? "" : ` · difference ${detail.distance ?? "?"} of 64`}</small>
+                  <small>{formatWindhoek(flag.created_at as string)}{brand || cheap ? "" : ` · difference ${detail.distance ?? "?"} of 64`}</small>
                 </div>
-                <FlagActions kind="item" id={flag.id as string} reason={flag.reason as "duplicate_photo" | "brand_check"} />
+                <FlagActions kind="item" id={flag.id as string} reason={flag.reason as "duplicate_photo" | "brand_check" | "price_low"} />
               </li>
             );
           })}

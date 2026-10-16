@@ -553,11 +553,11 @@ Each milestone should end with something usable on a phone.
 - [x] Town filter on browse (`?town=Swakopmund`). A brand filter is still to do
 - [ ] Reading phone numbers out of photos (needs OCR, not built). Blur and duplicate checks warn or flag rather than block, so honest sellers are never stopped by a false alarm
 - [x] Item details form with validation, condition-specific photo checks, and private draft save
-- [ ] Closet clear-out mode with offline drafts. Done: "Waiting for verification" status and auto-publish on ID approval
+- [x] Closet clear-out mode at `/sell/clear-out`: items and processed photos are kept on the phone (IndexedDB), then uploaded and published in one go, with retries that never make duplicates. Limit: the page has to be open before the signal drops, because pages are deliberately never cached offline. "Waiting for verification" status and auto-publish on ID approval also done
 - [x] Feed reads active listings from Supabase when configured; example catalog remains for local preview
-- [ ] Full-text search and filters. Done: prefix search, category, size group, condition, price, sort. Still to do: brand and town filters
+- [x] Full-text search and filters: prefix search, category, size group, town, brand (40 seeded brands, linked from what the seller types), condition, price, and a "Trusted sellers first" sort
 - [x] Favourites and follow seller (saved list at `/saved`, follower counts on shop pages)
-- [ ] Data saver mode. Low-data targets met
+- [x] Data saver mode: Account switch, or automatic when the phone sends Save-Data. Lists use the 320 pixel photos and stop prefetching. Low-data targets not measured on a real phone
 
 #### M3: Chat and offers (January 2027)
 
@@ -583,7 +583,7 @@ Each milestone should end with something usable on a phone.
 - [x] Account page with data download and account deletion (`/account`; personal details erased, order records kept for the other party)
 - [x] Admin dashboard (`/admin`): verifications, reports, order problems with a decision form, listing flags (duplicate photos and brand checks), account flags, restrict or suspend. Earlier notes: `/admin` queue for reports, ID checks and orders under review, with remove, restrict and suspend. Still to do: flags, brand checks, resolving disputed orders
 - [x] Moderator action log, and two-factor login for moderators (authenticator app at `/admin/security`). The queue always needs two-factor; the database also refuses staff actions without it once `require_moderator_mfa` is switched on (see the runbook)
-- [x] Scam signal flags ([list](docs/operations/moderator-guide.md#scam-signals)): new accounts with several expensive listings, two or more strikes, repeated contact details across chats, and duplicate photos. Not built: price far below the usual range for a brand (needs price data per brand) and several accounts on one device (needs device fingerprints)
+- [x] Scam signal flags ([list](docs/operations/moderator-guide.md#scam-signals)): new accounts with several expensive listings, two or more strikes, repeated contact details across chats, and duplicate photos, and a price under a quarter of the middle price for the same brand and type (needs five comparables). Not built, on purpose: several accounts on one device, because it needs device fingerprints that go against keeping user data minimal. The price check only works once a brand and category have five listings
 - [x] Trusted-seller job (daily): 10 completed sales, at least 5 reviews averaging 4.5 or more, account 60+ days old, no upheld dispute in 180 days. Lost under 4.3 or after an upheld dispute. Runs in `pg_cron` when available and from `/api/cron/trust`. Search priority for trusted sellers is not built
 
 #### M6: Pilot launch prep (February 2027)

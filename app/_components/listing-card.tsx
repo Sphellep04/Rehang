@@ -11,16 +11,16 @@ export function ListingCard({ listing, saved, signedIn, showSeller = true }: Pro
 
   return (
     <article className="listing">
-      <Link className="listing-image" href={href} aria-label={`View ${listing.title}`}>
+      <Link className="listing-image" href={href} prefetch={listing.lite ? false : undefined} aria-label={`View ${listing.title}`}>
         {listing.image && (
-          <Image src={listing.image} alt={listing.title} width={720} height={870} sizes="(max-width: 760px) 50vw, 28vw" loading="lazy" unoptimized />
+          <Image src={listing.lite && listing.thumb ? listing.thumb : listing.image} alt={listing.title} width={listing.lite ? 320 : 720} height={listing.lite ? 387 : 870} sizes="(max-width: 760px) 50vw, 28vw" loading="lazy" unoptimized />
         )}
         <span className="condition-tag">{sold ? "Sold" : listing.condition}</span>
       </Link>
       {!sold && (
         <SaveButton itemId={listing.id} title={listing.title} initialSaved={saved} signedIn={signedIn} />
       )}
-      <Link className="listing-info" href={href}>
+      <Link className="listing-info" href={href} prefetch={listing.lite ? false : undefined}>
         <span className="listing-title-row"><span>{listing.title}</span><b>{formatPrice(listing.price)}</b></span>
         <span className="listing-meta">Size {listing.size} <i /> {listing.category}</span>
         {showSeller && (

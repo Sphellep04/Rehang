@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { tradeError } from "@/lib/trade";
 
-type Props = { kind: "item"; id: string; reason: "duplicate_photo" | "brand_check" } | { kind: "account"; id: string };
+type Props = { kind: "item"; id: string; reason: "duplicate_photo" | "brand_check" | "price_low" } | { kind: "account"; id: string };
 
 export function FlagActions(props: Props) {
   const router = useRouter();
