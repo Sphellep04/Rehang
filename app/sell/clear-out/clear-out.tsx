@@ -9,6 +9,7 @@ import { uploadEntries, type PhotoEntry } from "@/lib/photo-client";
 import { deleteDraft, listDrafts, saveDraft, type ClearOutDraft } from "@/lib/clearout-store";
 import { tradeError } from "@/lib/trade";
 import { PhotoPicker } from "../../_components/photo-picker";
+import { PriceHint } from "../../_components/price-hint";
 
 type Props = { categories: CategoryOption[]; sizes: SizeOption[]; towns: TownOption[]; defaultTownId: number | null; brands: string[] };
 type Outcome = { live: number; waiting: number; saved: number; failed: number };
@@ -205,6 +206,7 @@ export function ClearOut({ categories, sizes, towns, defaultTownId, brands }: Pr
             <label className="field-span-two">Description <span>(optional)</span><textarea name="description" maxLength={500} placeholder="Fit, fabric, measurements or anything a buyer should know" /></label>
             <fieldset className="field-span-two color-field"><legend>Colour <span>(choose 1 or 2)</span></legend><div className="color-options">{colorChoices.map((color) => <label className="color-option" key={color}><input type="checkbox" checked={colours.includes(color)} onChange={() => toggleColour(color)} /><span className="color-swatch" data-color={color.toLowerCase().replaceAll("/", "-")} />{color}</label>)}</div></fieldset>
             <label>Price in N$<input name="price" type="number" min={20} max={20000} step={1} placeholder="250" required /></label>
+            <div className="field-span-two"><PriceHint categoryId={sticky.category_id} condition={sticky.condition} brand={sticky.brand_text} /></div>
             <label>Town<select name="town_id" required value={sticky.town_id} onChange={(e) => setSticky({ ...sticky, town_id: e.target.value })}><option value="" disabled>Choose a town</option>{towns.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
           </div>
         </section>

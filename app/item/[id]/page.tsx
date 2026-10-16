@@ -18,6 +18,7 @@ import { Stars } from "../../_components/stars";
 import { TradePanel } from "../../_components/trade-panel";
 import { SiteHeader } from "../../_components/site-header";
 import { ShareButton } from "../../_components/share-button";
+import { ViewCounter } from "../../_components/view-counter";
 import { shareText, siteUrl } from "@/lib/site";
 
 export async function generateMetadata({ params }: PageProps<"/item/[id]">): Promise<Metadata> {
@@ -73,6 +74,7 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
 
   return (
     <main>
+      <ViewCounter itemId={listing.id} />
       <SiteHeader signedIn={signedIn} />
       <nav className="crumbs" aria-label="Breadcrumb">
         <Link href="/browse">Browse</Link><span>/</span><span>{listing.category}</span>

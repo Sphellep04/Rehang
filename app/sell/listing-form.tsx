@@ -9,6 +9,7 @@ import { colorChoices, conditions, type CategoryOption, type SizeOption, type To
 import { tradeError } from "@/lib/trade";
 import { uploadEntries, type PhotoEntry } from "@/lib/photo-client";
 import { PhotoPicker } from "../_components/photo-picker";
+import { PriceHint } from "../_components/price-hint";
 
 
 
@@ -37,6 +38,7 @@ export function ListingForm({
   const [message, setMessage] = useState("");
   const [needsId, setNeedsId] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [hintInputs, setHintInputs] = useState({ category: "", condition: "", brand: "" });
 
   function toggleColor(color: string) {
     setSelectedColors((current) => {
@@ -127,7 +129,10 @@ export function ListingForm({
   }
 
   return (
-    <form className="listing-form" onSubmit={saveListing}>
+    <form className="listing-form" onSubmit={saveListing} onChange={(event) => {
+      const data = new FormData(event.currentTarget);
+      setHintInputs({ category: String(data.get("category_id") ?? ""), condition: String(data.get("condition") ?? ""), brand: String(data.get("brand_text") ?? "") });
+    }}>
       <section className="listing-form-section">
         <div className="form-section-heading"><span>01</span><div><h2>Item details</h2><p>Describe the item as it is.</p></div></div>
         <div className="form-fields">
@@ -139,6 +144,7 @@ export function ListingForm({
           <label className="field-span-two" htmlFor="listing-description">Description <span>(optional · 500 characters)</span><textarea id="listing-description" name="description" maxLength={500} placeholder="Fit, fabric, measurements or anything a buyer should know" /></label>
           <fieldset className="field-span-two color-field"><legend>Colour <span>(choose 1 or 2)</span></legend><div className="color-options">{colorChoices.map((color) => <label className="color-option" key={color}><input type="checkbox" checked={selectedColors.includes(color)} onChange={() => toggleColor(color)} /><span className="color-swatch" data-color={color.toLowerCase().replaceAll("/", "-")} />{color}</label>)}</div></fieldset>
           <label htmlFor="listing-price">Price in N$<input id="listing-price" name="price" type="number" min={20} max={20000} step={1} placeholder="250" required /></label>
+          <div className="field-span-two"><PriceHint categoryId={hintInputs.category} condition={hintInputs.condition} brand={hintInputs.brand} /></div>
           <label htmlFor="listing-town">Town<select id="listing-town" name="town_id" required defaultValue={defaultTownId?.toString() ?? ""}><option value="" disabled>Choose a town</option>{towns.map((town) => <option value={town.id} key={town.id}>{town.name}</option>)}</select></label>
         </div>
       </section>

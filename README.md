@@ -168,11 +168,11 @@ The MVP does five things well: **sign up and verify, list fast, browse and filte
 - **Full dispute flow** with refunds and partial refunds.
 - **Courier and postal delivery** with tracking, which opens town-to-town sales.
 - Buyer protection fee and commission collected automatically.
-- Bundle discounts (buy three items from one seller, save 10 percent).
-- Price suggestions from similar sold items.
-- "Brand verified" badge.
+- Bundle discounts (buy three items from one seller, save 10 percent). **Not built yet.** It changes the order flow for several items at once, so it waits until the pilot shows buyers want it.
+- Price suggestions from similar sold items. **Built:** the sell forms show a low, middle and high price once five similar listings exist (same brand first, then the whole category). Only useful once the marketplace has listings.
+- "Brand verified" badge. **Covered** by the existing "Photos reviewed" label, which a moderator adds after comparing label and stitching photos. A separate badge would add nothing until brands have their own verification process.
 - Push notifications and WhatsApp order updates.
-- Seller stats: views, saves, sales.
+- Seller stats: views, saves, sales. **Built** on My listings. Views are a daily count with no viewer recorded, and anyone can switch the counts off under Account.
 - Boosts (once there are more than 2,000 active listings).
 
 ### Phase 3 additions (grow)

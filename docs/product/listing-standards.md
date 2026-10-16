@@ -110,7 +110,7 @@ Automatic checks (built in milestone M2):
 ## Pricing guidance
 
 - The MVP shows a simple hint beside the price box: "Similar items usually sell for N$X–Y", using category + brand + condition medians from sold items. Until there's enough data, show fixed ranges per category, collected from the WhatsApp test.
-- Price suggestions based on similar sold items come fully in Phase 2.
+- Price suggestions are built. They appear on the sell forms once five similar listings exist, and are only a guide.
 
 ## What gets a listing removed
 

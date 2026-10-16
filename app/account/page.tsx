@@ -9,6 +9,7 @@ import { getViewerId } from "@/lib/supabase/viewer";
 import { PageLoading } from "../_components/page-loading";
 import { SiteHeader } from "../_components/site-header";
 import { DeleteForm } from "./delete-form";
+import { AnalyticsForm } from "./analytics-form";
 import { DataSaverForm } from "./data-saver-form";
 import { dataSaverOn } from "@/lib/data-saver";
 import { EmailForm } from "./email-form";
@@ -49,6 +50,7 @@ async function AccountContent() {
         </dl>
         <PhotoForm userId={viewerId} currentUrl={me.photo_url as string | null} name={me.display_name as string} />
         <DataSaverForm initiallyOn={await dataSaverOn()} />
+        <AnalyticsForm />
         <EmailForm alerts={me.email_alerts !== false} digest={me.email_digest === true} />
         <div className="order-form">
           <h3>Your data</h3>

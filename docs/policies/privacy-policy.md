@@ -20,7 +20,7 @@
 | ID document image and selfie | Verify identity and age, prevent fraud | Consent. Legitimate interest in preventing fraud |
 | ID number | Stored only as a one-way code (hash), so one person can't open many seller accounts | Legitimate interest in preventing fraud |
 | Listings, photos, messages, offers, orders, reviews | Running the marketplace, resolving disputes | Needed to provide the service |
-| Usage events (for example a share click or app install), stored by us and tied to your account only if you are signed in | Improving the app, security | Legitimate interest. You can opt out of analytics |
+| Usage counts (for example a share click, an app install or a view of an item). Item views are a plain daily number with no viewer attached. Share and install counts are tied to your account only if you are signed in | Showing sellers their numbers, improving the app, security | Legitimate interest. You can switch these off under Account, on each phone or browser |
 | Payment references (Phase 2) | Processing orders. **We never see or store card numbers** | Needed to provide the service |
 
 ## 2. Who can see your data
