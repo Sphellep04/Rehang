@@ -58,6 +58,7 @@ Actions: hold the listings → ask for extra photos (item with a handwritten not
    - Change of mind → the seller wins.
 4. Write a decision note both sides can read: facts, rule applied, outcome.
 5. In `/admin` the buttons are **Seller at fault** and **Buyer at fault** (the order is cancelled, or stays completed, and that person gets a strike), **No fault** (cancelled, no strike) and **It did happen** (marks a disputed or locked order completed). Payment is cash at the meet-up, so there are no refunds to make in Phase 1.
+6. **Orders paid online (when payments are on):** the same buttons apply, and a cancelled order queues a full refund to the buyer. For a posted order a **Part refund and complete** box also appears. Enter the amount (at least N$1, less than item plus postage) and a reason both people will read. The order completes, the buyer's refund is queued and the seller's payout is reduced by the same amount. Refunds and payouts are only queued: the payment partner's adapter carries them out.
 6. To read a reported chat message, use **Read the conversation**. It shows the message and those around it, and the look is written to the action log.
 
 ## Ban ladder

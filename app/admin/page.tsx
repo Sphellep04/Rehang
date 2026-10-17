@@ -57,9 +57,9 @@ async function AdminContent() {
   const verifications = verificationsResult.data ?? [];
   const disputeRows = disputesResult.data ?? [];
   const { data: disputeOrders } = disputeRows.length
-    ? await supabase.from("orders").select("id,item_id,buyer_id,seller_id,amount_cents,status").in("id", disputeRows.map((d) => d.order_id as string))
+    ? await supabase.from("orders").select("id,item_id,buyer_id,seller_id,amount_cents,status,delivery_method,shipping_cents").in("id", disputeRows.map((d) => d.order_id as string))
     : { data: [] };
-  const disputed = (disputeOrders ?? []) as { id: string; item_id: string; buyer_id: string; seller_id: string; amount_cents: number; status: string }[];
+  const disputed = (disputeOrders ?? []) as { id: string; item_id: string; buyer_id: string; seller_id: string; amount_cents: number; status: string; delivery_method: string; shipping_cents: number }[];
   const orderById = new Map(disputed.map((order) => [order.id, order]));
   const log = logResult.data ?? [];
   const flags = flagsResult.data ?? [];
@@ -208,7 +208,7 @@ async function AdminContent() {
                   <p className="admin-quote">Seller: {(row.seller_statement as string | null) ?? "no statement yet"}</p>
                   <small>{formatWindhoek(row.created_at as string)}. Read the chat and the listing photos before deciding.</small>
                 </div>
-                <DisputeDecision orderId={order.id} completed={order.status === "completed"} />
+                <DisputeDecision orderId={order.id} completed={order.status === "completed"} refundableCents={(order.delivery_method === "courier" || order.delivery_method === "post") && ["disputed", "shipped", "delivered"].includes(order.status) ? Number(order.amount_cents) + Number(order.shipping_cents) : 0} />
               </li>
             );
           })}

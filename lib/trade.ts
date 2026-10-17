@@ -34,6 +34,8 @@ const messages: Record<string, string> = {
   bundles_off: "Bundles are not open yet.",
   bundle_size: "Choose between 3 and 10 different items.",
   bundle_one_seller: "A bundle must be from one seller.",
+  not_paid_online: "This order was not paid online, so there is nothing to refund here.",
+  invalid_refund_amount: "The refund must be at least N$1 and less than the item plus postage.",
   donations_off: "Giving is not open yet. Check back soon.",
   partner_not_found: "We couldn't find that home.",
   note_too_long: "Keep the note short, under the limit shown.",

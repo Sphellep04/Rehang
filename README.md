@@ -165,14 +165,14 @@ The MVP does five things well: **sign up and verify, list fast, browse and filte
 ### Phase 2 additions (public launch)
 
 - **Checkout with held payment** through a licensed partner, released on confirmation or 48 hours after delivery.
-- **Full dispute flow** with refunds and partial refunds.
+- **Full dispute flow** with refunds and partial refunds. **Built** in the database and the moderator screen: a full refund cancels the order and queues the refund, and "Part refund and complete" refunds an amount, completes the order and pays the seller the rest. Nothing moves money until a payment partner is connected.
 - **Courier and postal delivery** with tracking, which opens town-to-town sales.
-- Buyer protection fee and commission collected automatically.
+- Buyer protection fee and commission collected automatically. **Built**: both are read from `app_config` when an order is created and deducted from the queued payout. Off until payments are connected.
 - Bundle discounts (buy three items from one seller, save 10 percent). Built for meet-up orders and switched off (`bundles_enabled`): `/bundle/<seller>`, one order for all items, all sold or all released together. Discount percent and minimum come from `app_config`. Features waiting on partners or decisions are listed in [parked features](docs/product/parked-features.md).
 - Price suggestions from similar sold items. **Built:** the sell forms show a low, middle and high price once five similar listings exist (same brand first, then the whole category). Only useful once the marketplace has listings.
 - "Brand verified" badge. **Covered** by the existing "Photos reviewed" label, which a moderator adds after comparing label and stitching photos. A separate badge would add nothing until brands have their own verification process.
-- Push notifications and WhatsApp order updates.
-- Seller stats: views, saves, sales. **Built** on My listings. Views are a daily count with no viewer recorded, and anyone can switch the counts off under Account.
+- Push notifications and WhatsApp order updates. **Parked**, waiting on a provider: see [parked features](docs/product/parked-features.md).
+- Seller dashboard at `/dashboard`: what needs attention, sales and commission for 30 days and in total, payout status, 8 weeks of sales, listing counts and the most viewed items. **Built.** Seller stats: views, saves, sales. **Built** on My listings. Views are a daily count with no viewer recorded, and anyone can switch the counts off under Account.
 - Boosts (once there are more than 2,000 active listings).
 
 ### Phase 3 additions (grow)
