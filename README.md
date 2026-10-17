@@ -597,10 +597,11 @@ Each milestone should end with something usable on a phone.
 
 #### M7: Held payments (March 2027, during the pilot, behind a feature flag)
 
-- [ ] Gateway integration: checkout, signed webhooks, held funds, release, refunds
-- [ ] Commission and buyer fee from `app_config`. Founding-seller exemption dates
-- [ ] Full dispute flow with evidence upload
-- [ ] Courier and post orders with a tracking number and the 3-day ship timer
+- [x] Held-payment layer, provider-neutral: `record_payment` (idempotent, checks the amount), refunds and payouts queued as `pending` rows for the partner's adapter, `settle_money_movement` to close them, and a signed webhook at `/api/payments/webhook` (HMAC with a 5 minute replay window, needs `PAYMENT_WEBHOOK_SECRET`). Off until `payments_enabled` and `courier_enabled` are set. **Tested only against a local scratch database and unit tests. No payment partner is connected.**
+- [ ] Gateway adapter for the chosen partner: checkout page, translating the partner's webhook into the neutral format, and carrying out the queued refunds and payouts
+- [x] Commission and buyer fee from `app_config` (taken when the order is created). [ ] Founding-seller exemption dates
+- [x] Dispute flow extended to posted orders (reason "not received"); [ ] evidence upload for posted orders
+- [x] Courier and post orders in the database: `buy_with_delivery`, `mark_shipped`, `confirm_received`, `accept_delivery`, the 3-day ship timer, 14 day auto-delivery and the 48 hour confirm window (`process_delivery_timers`, scheduled with `pg_cron`). [ ] Screens for sellers to set postage, buyers to enter an address and for tracking
 - [ ] Payout reconciliation report
 - [ ] Tested with real small transactions before switching on
 

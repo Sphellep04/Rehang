@@ -97,6 +97,19 @@ All timers run as scheduled database jobs (Supabase `pg_cron` or a scheduled fun
 
 Also counts as a strike: pushing a buyer to pay outside the app (Phase 2), or asking for a deposit or delivery fee upfront. Serious fraud skips the ladder and leads to an immediate ban.
 
+## Posted orders (courier and post, Phase 2)
+
+Built in the database and switched off by default. Both `courier_enabled` and `payments_enabled` in `app_config` must be true.
+
+1. A seller opts an item in by setting a postage price (`items.shipping_cents`). Empty means meet-up only.
+2. The buyer gives a delivery address (10 to 300 characters, shown only to the seller of that order) and the order waits for payment for 30 minutes. The item is held meanwhile. The buyer pays item + postage + buyer fee.
+3. The payment partner reports the result to `/api/payments/webhook`. A payment of the wrong amount does not release the order and moderators are alerted. Money that arrives after the order timed out is queued for refund.
+4. Paid orders must be posted within 3 days (`ship_within_days`). The seller adds a tracking number. If they miss the window the order is cancelled, the buyer is refunded and the seller gets a strike.
+5. The buyer taps "received", which starts a 48 hour window (`delivery_confirm_hours`) to accept or report a problem. If the buyer never answers, a parcel posted 14 days ago (`delivery_wait_days`) counts as delivered and the same window starts. Silence for 48 hours completes the order.
+6. On completion a payout of item + postage minus commission is queued. On cancellation a refund of the full amount is queued. A partner adapter must carry out the queued rows and call `settle_money_movement`.
+
+If `pg_cron` is not available, call `select public.process_delivery_timers();` every five minutes alongside `process_order_timers()`.
+
 ## Problems and disputes
 
 **Phase 1 (meet-up only):** "Report a problem with this order" sends the order and chat history to the moderator queue. Examples: item very different from the listing, seller behaving unsafely, fake payment proof.

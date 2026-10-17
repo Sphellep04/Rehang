@@ -29,6 +29,12 @@ function copyFor(kind: string, payload: Record<string, unknown>): Copy | null {
     case "dispute_opened": return { subject: "A problem was reported on an order", line: "Open the order to read what was reported and give your side.", path: order, cta: "Open order" };
     case "dispute_decided": return { subject: "A decision on your reported order", line: "Our team has decided. Open the order to read the reasons.", path: order, cta: "Read the decision" };
     case "order_completed": return { subject: "Your order is complete", line: "Thank you for trading on Rehang. Leave a short review to help others.", path: order, cta: "Leave a review" };
+    case "order_paid": return { subject: "An order has been paid", line: "The payment is held safely. Sellers: post the item and add the tracking number within 3 days.", path: order, cta: "Open order" };
+    case "order_shipped": return { subject: "Your order is on its way", line: "The seller has posted your item. Open the order for the tracking number, then confirm when it arrives.", path: order, cta: "Track order" };
+    case "order_delivered": return { subject: "Your parcel was marked as received", line: "The buyer has 48 hours to confirm or report a problem, then your payout is released.", path: order, cta: "Open order" };
+    case "payment_failed": return { subject: "Your payment did not go through", line: "Nothing was taken. Open the order to try again before it times out.", path: order, cta: "Open order" };
+    case "refund_pending": return { subject: "Your refund is on its way", line: "Your payment is being returned. It can take a few days to show in your account.", path: order, cta: "Open order" };
+    case "payout_pending": return { subject: "Your payout is being sent", line: "The buyer is happy, so your money is on its way to you.", path: order, cta: "Open order" };
     case "order_cancelled": return { subject: "An order was cancelled", line: "One of your orders was cancelled. Open it to see the reason.", path: order, cta: "Open order" };
     case "cancel_agreement_requested": return { subject: "A request to cancel an order", line: "The other person asked to cancel together. Please accept or decline.", path: order, cta: "Open order" };
     case "no_show_reported": return { subject: "A no-show was reported on your order", line: "If this is wrong, you can dispute it from the order page.", path: order, cta: "Respond" };
