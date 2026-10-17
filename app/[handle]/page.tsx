@@ -68,6 +68,8 @@ async function ShopContent({ params }: { params: PageProps<"/[handle]">["params"
   const signedIn = viewerId !== null;
   const isOwner = viewerId === sellerId;
 
+  const { data: bundleFlag } = await supabase.from("app_config").select("value").eq("key", "bundles_enabled").maybeSingle();
+  const bundlesOn = bundleFlag?.value === true && !isOwner;
   const [statsResult, active, sold, followResult, blockResult, ratingResult, reviewsResult] = await Promise.all([
     supabase.rpc("shop_stats", { p_seller: sellerId }).maybeSingle(),
     listingsForSeller(supabase, sellerId, "active"),
@@ -108,6 +110,7 @@ async function ShopContent({ params }: { params: PageProps<"/[handle]">["params"
         <div className="shop-hero-body">
           <p className="eyebrow">@{handle}{profile.town ? ` · ${profile.town}` : ""}</p>
           <h1>{name}</h1>
+          {bundlesOn && active.length >= 3 && <p className="trade-hint"><Link href={`/bundle/${handle}`}>Buy 3 or more and save</Link></p>}
           <p className="shop-rating"><Stars value={rating.average === null ? null : Number(rating.average)} count={Number(rating.review_count)} /></p>
           <p className="shop-badges">
             {profile.verification_level === "level2" && <span className="badge badge-green">Verified seller</span>}

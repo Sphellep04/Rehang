@@ -168,7 +168,7 @@ The MVP does five things well: **sign up and verify, list fast, browse and filte
 - **Full dispute flow** with refunds and partial refunds.
 - **Courier and postal delivery** with tracking, which opens town-to-town sales.
 - Buyer protection fee and commission collected automatically.
-- Bundle discounts (buy three items from one seller, save 10 percent). **Not built yet.** It changes the order flow for several items at once, so it waits until the pilot shows buyers want it.
+- Bundle discounts (buy three items from one seller, save 10 percent). Built for meet-up orders and switched off (`bundles_enabled`): `/bundle/<seller>`, one order for all items, all sold or all released together. Discount percent and minimum come from `app_config`. Features waiting on partners or decisions are listed in [parked features](docs/product/parked-features.md).
 - Price suggestions from similar sold items. **Built:** the sell forms show a low, middle and high price once five similar listings exist (same brand first, then the whole category). Only useful once the marketplace has listings.
 - "Brand verified" badge. **Covered** by the existing "Photos reviewed" label, which a moderator adds after comparing label and stitching photos. A separate badge would add nothing until brands have their own verification process.
 - Push notifications and WhatsApp order updates.

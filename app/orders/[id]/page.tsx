@@ -40,7 +40,7 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
   // Columns are listed on purpose: select * on orders is refused for signed-in clients.
   const { data: order } = await supabase
     .from("orders")
-    .select("id,item_id,buyer_id,seller_id,amount_cents,status,meetup_spot_id,meetup_at,meetup_confirmed_at,confirm_by,completed_at,cancelled_at,cancel_reason,code_attempts,created_at,delivery_method,shipping_cents,buyer_fee_cents,delivery_address,tracking_number,ship_by,shipped_at,delivered_at")
+    .select("id,item_id,bundle_offer_id,buyer_id,seller_id,amount_cents,status,meetup_spot_id,meetup_at,meetup_confirmed_at,confirm_by,completed_at,cancelled_at,cancel_reason,code_attempts,created_at,delivery_method,shipping_cents,buyer_fee_cents,delivery_address,tracking_number,ship_by,shipped_at,delivered_at")
     .eq("id", id)
     .maybeSingle();
   if (!order) notFound();
@@ -51,16 +51,24 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
   const otherId = role === "buyer" ? order.seller_id : order.buyer_id;
 
   const [{ data: item }, { data: other }, { data: events }] = await Promise.all([
-    supabase.from("items").select("id,title,town_id").eq("id", order.item_id).maybeSingle(),
+    order.item_id ? supabase.from("items").select("id,title,town_id").eq("id", order.item_id).maybeSingle() : Promise.resolve({ data: null }),
     supabase.from("public_profiles").select("display_name,handle").eq("id", otherId).maybeSingle(),
     supabase.from("order_events").select("event,actor_id,created_at").eq("order_id", id),
   ]);
 
+  const { data: bundleItems } = order.bundle_offer_id ? await supabase.rpc("bundle_order_items", { p_order: id }) : { data: null };
+  const bundleList = (bundleItems ?? []) as { item_id: string; title: string; amount_cents: number }[];
+
   const { data: spotRow } = order.meetup_spot_id
     ? await supabase.from("meetup_spots").select("name,address").eq("id", order.meetup_spot_id).maybeSingle()
     : { data: null };
-  const { data: spotRows } = item?.town_id
-    ? await supabase.from("meetup_spots").select("id,name,address").eq("town_id", item.town_id).eq("active", true).order("name")
+  let townId = item?.town_id as number | null | undefined;
+  if (!townId && bundleList.length) {
+    const { data: first } = await supabase.from("items").select("town_id").eq("id", bundleList[0].item_id).maybeSingle();
+    townId = first?.town_id as number | null | undefined;
+  }
+  const { data: spotRows } = townId
+    ? await supabase.from("meetup_spots").select("id,name,address").eq("town_id", townId).eq("active", true).order("name")
     : { data: [] };
 
   const { data: dispute } = await supabase
@@ -114,10 +122,16 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
       <section className="browse order-page">
         <Link className="plain-button" href="/orders">← All orders</Link>
         <p className="eyebrow order-eyebrow">{role === "buyer" ? "YOU ARE BUYING" : "YOU ARE SELLING"}</p>
-        <h1 className="browse-title">{(item?.title as string | undefined) ?? "Your order"}</h1>
+        <h1 className="browse-title">{bundleList.length ? `Bundle of ${bundleList.length} items` : (item?.title as string | undefined) ?? "Your order"}</h1>
         <p className="order-summary">
           <b>N${amount.toLocaleString("en-ZA")}</b> · {role === "buyer" ? "from" : "to"} {other?.handle ? <Link href={`/${other.handle}`}>{otherName}</Link> : otherName} · <span className={`status-pill status-${order.status}`}>{orderStatusLabel[order.status] ?? order.status}</span>
         </p>
+
+        {bundleList.length > 0 && (
+          <ul className="list-cards">
+            {bundleList.map((row) => <li className="list-card" key={row.item_id}><div className="list-card-main"><b>{row.title}</b><small>N${Math.round(Number(row.amount_cents) / 100).toLocaleString("en-ZA")} after the bundle discount</small></div></li>)}
+          </ul>
+        )}
 
         {order.status === "completed" && <p className="trade-success" role="status">Sale complete{order.completed_at ? ` on ${formatWindhoek(order.completed_at)}` : ""}. Thank you for choosing secondhand.</p>}
         {order.status === "cancelled" && <p className="trade-hint">This order was cancelled{order.cancelled_at ? ` on ${formatWindhoek(order.cancelled_at)}` : ""}.</p>}

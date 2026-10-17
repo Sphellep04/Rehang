@@ -29,7 +29,7 @@ async function OrdersContent() {
   const supabase = await createClient();
   const { data: rows } = await supabase
     .from("orders")
-    .select("id,item_id,buyer_id,seller_id,amount_cents,status,meetup_at,meetup_confirmed_at,created_at")
+    .select("id,item_id,bundle_offer_id,buyer_id,seller_id,amount_cents,status,meetup_at,meetup_confirmed_at,created_at")
     .or(`buyer_id.eq.${viewerId},seller_id.eq.${viewerId}`)
     .order("created_at", { ascending: false })
     .limit(60);
@@ -38,6 +38,12 @@ async function OrdersContent() {
   const itemIds = [...new Set(orders.map((order) => order.item_id).filter((value): value is string => Boolean(value)))];
   const { data: items } = itemIds.length ? await supabase.from("items").select("id,title").in("id", itemIds) : { data: [] };
   const titleById = new Map((items ?? []).map((item) => [item.id as string, item.title as string]));
+
+  const bundleIds = orders.map((order) => order.bundle_offer_id).filter((value): value is string => Boolean(value));
+  const { data: bundleRows } = bundleIds.length ? await supabase.from("bundle_offer_items").select("bundle_offer_id").in("bundle_offer_id", bundleIds) : { data: [] };
+  const bundleCount = new Map<string, number>();
+  for (const row of bundleRows ?? []) bundleCount.set(row.bundle_offer_id as string, (bundleCount.get(row.bundle_offer_id as string) ?? 0) + 1);
+  const titleFor = (order: (typeof orders)[number]) => order.bundle_offer_id ? `Bundle of ${bundleCount.get(order.bundle_offer_id as string) ?? "several"} items` : titleById.get(order.item_id as string) ?? "Order";
 
   const liveStatuses = ["awaiting_meetup", "awaiting_payment", "paid_held", "shipped", "delivered"];
   const open = orders.filter((order) => liveStatuses.includes(order.status));
@@ -50,7 +56,7 @@ async function OrdersContent() {
     return (
       <li className="list-card">
         <div className="list-card-main">
-          <Link href={`/orders/${order.id}`}><b>{titleById.get(order.item_id as string) ?? "Order"}</b></Link>
+          <Link href={`/orders/${order.id}`}><b>{titleFor(order)}</b></Link>
           <p>{buying ? "Buying" : "Selling"} · N${Math.round(Number(order.amount_cents) / 100).toLocaleString("en-ZA")}</p>
           <small>{orderStatusLabel[order.status] ?? order.status}{next ? ` · ${next}` : ""}</small>
         </div>

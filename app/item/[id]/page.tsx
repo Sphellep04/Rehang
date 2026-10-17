@@ -65,12 +65,13 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
     supabase.from("app_config").select("value").eq("key", "minimum_offer_percent").maybeSingle(),
     supabase.rpc("rating_summary", { p_user: listing.sellerId }).maybeSingle(),
     supabase.from("items").select("shipping_cents").eq("id", listing.id).maybeSingle(),
-    supabase.from("app_config").select("key,value").in("key", ["courier_enabled", "payments_enabled", "buyer_fee_cents"]),
+    supabase.from("app_config").select("key,value").in("key", ["courier_enabled", "payments_enabled", "buyer_fee_cents", "bundles_enabled", "bundle_discount_percent"]),
   ]);
   const flagValue = (key: string) => (deliveryFlags.data ?? []).find((row) => row.key === key)?.value;
   const postageCents = deliveryRow.data?.shipping_cents == null ? null : Number(deliveryRow.data.shipping_cents);
   const deliveryOn = flagValue("courier_enabled") === true && flagValue("payments_enabled") === true && postageCents !== null;
   const feeCents = Number(flagValue("buyer_fee_cents") ?? 0) || 0;
+  const bundlePercent = flagValue("bundles_enabled") === true ? Number(flagValue("bundle_discount_percent") ?? 10) || 10 : 0;
   const rating = (ratingResult.data ?? { average: null, review_count: 0 }) as { average: number | null; review_count: number };
   const minimumPercent = Number(offerConfig.data?.value ?? 60) || 60;
 
@@ -104,6 +105,7 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
           {listing.description && <p className="item-description">{listing.description}</p>}
 
           {available && !isOwner && <TradePanel itemId={listing.id} price={listing.price} signedIn={signedIn} minimumPercent={minimumPercent} />}
+          {available && !isOwner && bundlePercent > 0 && more.length >= 3 && <p className="trade-hint"><Link href={`/bundle/${listing.sellerHandle}`}>Save {bundlePercent}% when you buy 3 or more from {listing.seller}</Link></p>}
           {available && !isOwner && deliveryOn && postageCents !== null && <DeliveryPanel itemId={listing.id} price={listing.price} postageCents={postageCents} feeCents={feeCents} signedIn={signedIn} />}
 
           <div className="item-actions">
