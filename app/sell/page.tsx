@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -8,7 +9,7 @@ type CategoryRow = { id: number; name: string; parent_id: number | null };
 type SizeRow = { id: number; system: string; value: string };
 type TownRow = { id: number; name: string };
 
-export default async function SellPage() {
+export default function SellPage() {
   if (!isSupabaseConfigured()) {
     return (
       <main className="auth-page">
@@ -16,23 +17,34 @@ export default async function SellPage() {
         <section className="auth-card sell-setup">
           <p className="eyebrow">SELL IN WINDHOEK</p>
           <h1>Set up Rehang first</h1>
-          <p>Phone sign-in and the local Supabase project must be configured before you can save a listing.</p>
+          <p>Email sign-in and the Supabase project must be configured before you can save a listing.</p>
           <Link className="button button-ink" href="/login">Go to sign in</Link>
         </section>
       </main>
     );
   }
 
+  return (
+    <Suspense fallback={<main className="auth-page"><p className="auth-loading">Loading your shop…</p></main>}>
+      <SellContent />
+    </Suspense>
+  );
+}
+
+async function SellContent() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   if (!claimsData?.claims.sub) redirect("/login");
 
-  const [{ data: categoryRows }, { data: sizes }, { data: towns }, { data: profile }] = await Promise.all([
+  const [{ data: categoryRows }, { data: sizes }, { data: towns }, { data: profile }, { data: brandRows }] = await Promise.all([
     supabase.from("categories").select("id,name,parent_id").eq("allowed", true).order("position"),
     supabase.from("sizes").select("id,system,value").order("system").order("value"),
     supabase.from("towns").select("id,name").eq("is_live", true).order("name"),
     supabase.from("users").select("terms_accepted_at,verification_level,town_id").eq("id", claimsData.claims.sub).maybeSingle(),
+    supabase.from("brands").select("name").order("name"),
   ]);
+  const { data: flagRows } = await supabase.from("app_config").select("key,value").in("key", ["courier_enabled", "payments_enabled"]);
+  const delivery = (flagRows ?? []).length === 2 && (flagRows ?? []).every((row) => row.value === true);
 
   if (!profile?.terms_accepted_at) redirect("/onboarding");
 
@@ -51,7 +63,8 @@ export default async function SellPage() {
         <div className="sell-heading">
           <p className="eyebrow">YOUR WINDHOEK SHOP</p>
           <h1>List an item.</h1>
-          <p>Start with clear photos and honest details. New listings save as drafts until the publishing flow is ready.</p>
+          <p>Start with clear photos and honest details.</p>
+          <p><Link href="/sell/clear-out">Clearing out a whole wardrobe? List many items at once, even without a signal.</Link></p>
         </div>
         <ListingForm
           categories={categories}
@@ -59,6 +72,8 @@ export default async function SellPage() {
           towns={(towns ?? []) as TownRow[]}
           defaultTownId={profile.town_id}
           verificationLevel={profile.verification_level}
+          brands={(brandRows ?? []).map((row) => row.name as string)}
+          delivery={delivery}
         />
       </div>
     </main>

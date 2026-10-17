@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { SiteNav } from "./_components/site-nav";
 
 type Listing = {
   id: string;
@@ -110,6 +112,20 @@ export default function Home() {
   }, []);
 
   const isLiveCatalog = catalogStatus === "live";
+
+  useEffect(() => {
+    if (catalogStatus !== "live" || !isSignedIn || listings.length === 0) return;
+    let cancelled = false;
+    const supabase = createClient();
+    void supabase
+      .from("favourites")
+      .select("item_id")
+      .in("item_id", listings.map((item) => item.id))
+      .then(({ data }) => {
+        if (!cancelled && data) setSaved(data.map((row) => row.item_id as string));
+      });
+    return () => { cancelled = true; };
+  }, [catalogStatus, isSignedIn, listings]);
   const isExampleCatalog = catalogStatus === "examples";
   const categories = ["All pieces", ...new Set(listings.map((item) => item.category))];
 
@@ -119,8 +135,34 @@ export default function Home() {
     .filter((item) => `${item.title} ${item.category} ${item.size} ${item.seller}`.toLowerCase().includes(query.trim().toLowerCase()))
     .sort((first, second) => sort === "price-low" ? first.price - second.price : 0);
 
-  function toggleSaved(id: string) {
-    setSaved((current) => current.includes(id) ? current.filter((value) => value !== id) : [...current, id]);
+  async function toggleSaved(item: Listing) {
+    const id = item.id;
+    const next = !saved.includes(id);
+    const apply = (on: boolean) => setSaved((current) => on ? [...new Set([...current, id])] : current.filter((value) => value !== id));
+
+    if (item.isExample || !isLiveCatalog) {
+      apply(next);
+      return;
+    }
+    if (!isSignedIn) {
+      router.push("/login");
+      return;
+    }
+
+    apply(next);
+    const supabase = createClient();
+    const { error } = next
+      ? await supabase.from("favourites").upsert({ item_id: id }, { onConflict: "user_id,item_id", ignoreDuplicates: true })
+      : await supabase.from("favourites").delete().eq("item_id", id);
+    if (error) {
+      apply(!next);
+      showNotice("Could not update your saved items.");
+    }
+  }
+
+  function openItem(item: Listing) {
+    if (item.isExample) setSelected(item);
+    else router.push(`/item/${item.id}`);
   }
 
   function showNotice(message: string) {
@@ -190,12 +232,11 @@ export default function Home() {
       <header className="site-header">
         <a className="wordmark" href="#top"><HangerMark />rehang<span className="coral">.</span></a>
         <span className="location"><i /> Windhoek, Namibia</span>
-        <label className="search-box"><span aria-hidden="true">⌕</span><span className="sr-only">Search listings</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search clothes, brands, sizes..." /></label>
-        <nav className="header-actions" aria-label="Main navigation">
-          <button className="saved-link" type="button" onClick={() => setSavedOnly((value) => !value)}>♡ Saved{saved.length > 0 && <b>{saved.length}</b>}</button>
-          {isSignedIn ? <a className="plain-button" href="/inbox">Messages</a> : <a className="plain-button" href="/login">Sign in</a>}
-          <a className="button button-coral" href="/sell">Sell an item <span>+</span></a>
-        </nav>
+        <form className="search-box" role="search" onSubmit={(event) => { event.preventDefault(); if (isLiveCatalog) router.push(query.trim() ? `/browse?q=${encodeURIComponent(query.trim())}` : "/browse"); }}><span aria-hidden="true">⌕</span><label className="sr-only" htmlFor="home-search">Search listings</label><input id="home-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search clothes, brands, sizes..." /></form>
+        <SiteNav
+          signedIn={isSignedIn}
+          savedControl={isLiveCatalog ? undefined : <button className="nav-link nav-saved" type="button" onClick={() => setSavedOnly((value) => !value)}><span aria-hidden="true">♡</span><span className="nav-label"> Saved</span>{saved.length > 0 && <b>{saved.length}</b>}</button>}
+        />
       </header>
 
       <section className="hero" id="top">
@@ -203,7 +244,7 @@ export default function Home() {
           <p className="eyebrow">SECOND-HAND CLOTHES · WINDHOEK</p>
           <h1>Clothes for another <em>round.</em></h1>
           <p className="hero-description">{isLiveCatalog ? "Browse second-hand clothes listed by sellers in Windhoek." : "Rehang will connect local buyers and sellers of second-hand clothes."}</p>
-          <div className="hero-actions"><a className="button button-ink" href="#shop">{isLiveCatalog ? "Browse listings" : "See example listings"} <span>↓</span></a><a className="button button-outline" href="/login">Sign in</a></div>
+          <div className="hero-actions"><a className="button button-ink" href="#shop">{isLiveCatalog ? "Browse listings" : "See example listings"} <span>↓</span></a><Link className="button button-outline" href="/login">Sign in</Link></div>
           <p className="hero-proof">Windhoek first <i /> Prices in N$ <i /> {isLiveCatalog ? "Local listings" : isExampleCatalog ? "Sample items only" : "Local marketplace"}</p>
         </div>
         <div className="hero-photo">
@@ -231,12 +272,12 @@ export default function Home() {
 
         {catalogStatus === "loading" ? <div className="empty-state" role="status"><h3>Loading listings…</h3></div> : catalogStatus === "unavailable" ? <div className="empty-state" role="status"><h3>Listings are unavailable right now.</h3><p>Please try again in a moment.</p></div> : visible.length ? <div className="listing-grid">{visible.map((item) => (
           <article className="listing" key={item.id}>
-            <button className="listing-image" type="button" onClick={() => setSelected(item)} aria-label={`View ${item.title}`}>
+            <button className="listing-image" type="button" onClick={() => openItem(item)} aria-label={`View ${item.title}`}>
               {item.image && <Image src={item.image} alt={item.title} width={720} height={870} sizes="(max-width: 760px) 50vw, 28vw" loading="lazy" unoptimized />}
               <span className="condition-tag">{item.condition}</span>
             </button>
-            <button className={`save-button ${saved.includes(item.id) ? "is-saved" : ""}`} type="button" aria-label={saved.includes(item.id) ? `Unsave ${item.title}` : `Save ${item.title}`} aria-pressed={saved.includes(item.id)} onClick={() => toggleSaved(item.id)}>{saved.includes(item.id) ? "♥" : "♡"}</button>
-            <button className="listing-info" type="button" onClick={() => setSelected(item)}>
+            <button className={`save-button ${saved.includes(item.id) ? "is-saved" : ""}`} type="button" aria-label={saved.includes(item.id) ? `Unsave ${item.title}` : `Save ${item.title}`} aria-pressed={saved.includes(item.id)} onClick={() => void toggleSaved(item)}>{saved.includes(item.id) ? "♥" : "♡"}</button>
+            <button className="listing-info" type="button" onClick={() => openItem(item)}>
               <span className="listing-title-row"><span>{item.title}</span><b>{item.isExample ? "Example · " : ""}N${item.price}</b></span>
               <span className="listing-meta">Size {item.size} <i /> {item.category}</span>
               {!item.isExample && <span className="seller-line">{item.verified ? "Verified seller" : "Seller"}: {item.seller}{item.trusted ? " · Trusted" : ""}</span>}
@@ -245,8 +286,8 @@ export default function Home() {
         ))}</div> : <div className="empty-state"><span>♡</span><h3>{savedOnly ? "Your saved pieces will live here." : "No pieces found just yet."}</h3><p>{savedOnly ? "Tap the heart on a listing to keep it close." : "Try another search or choose a different category."}</p><button type="button" onClick={() => { setCategory("All pieces"); setQuery(""); setSavedOnly(false); }}>Show all pieces</button></div>}
       </section>
 
-      <section className="seller-band" id="sell"><div><p className="eyebrow">SELLING IN WINDHOEK</p><h2>Want to list your clothes?</h2></div><a className="button button-paper" href="/sell">Start a listing <span>↗</span></a></section>
-      <footer className="site-footer"><a className="wordmark" href="#top"><HangerMark />rehang<span className="coral">.</span></a><span>Clear your closet. Earn from it.</span><span>Made for Namibia <b>✳</b></span></footer>
+      <section className="seller-band" id="sell"><div><p className="eyebrow">SELLING IN WINDHOEK</p><h2>Want to list your clothes?</h2></div><Link className="button button-paper" href="/sell">Start a listing <span>↗</span></Link></section>
+      <footer className="site-footer"><a className="wordmark" href="#top"><HangerMark />rehang<span className="coral">.</span></a><span className="footer-links"><Link href="/donate">Give</Link><Link href="/safe-spots">Safe spots</Link><Link href="/seller-rules">Seller rules</Link><Link href="/buyer-protection">Buyer protection</Link><Link href="/prohibited-items">Prohibited items</Link><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link></span><span>Made for Namibia <b>✳</b></span></footer>
 
       {selected && (
         <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>

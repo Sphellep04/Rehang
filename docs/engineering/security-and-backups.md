@@ -54,8 +54,40 @@ Rehang holds phone numbers, photos, chat and, most sensitive of all, ID document
 - [ ] RLS enabled on every table, with pgTAP tests passing
 - [ ] `id-documents` bucket is private. Signed URL expiry confirmed. Deletion job running
 - [ ] Moderator accounts have two-factor login
-- [ ] Rate limits live on OTP, messages, listings
+- [ ] Rate limits live on sign-in, sign-up, messages, listings (config written, see the review below; confirm on the hosted project)
 - [ ] Secrets only on the server. GitHub secret scanning on
 - [ ] Sentry and uptime alerts working
 - [ ] Backups confirmed, and one restore tested
 - [ ] Privacy policy and terms published, and consent recorded at sign-up
+
+## Security review, 14 October 2026
+
+A review of the database, the app and the dependencies. What was found, what was changed, and what is still open.
+
+### Fixed in code
+
+| Finding | Risk | Fix |
+|---|---|---|
+| The "return to" check (`safeNext`) let `/<tab>/evil.com` through. Browsers delete tabs and line breaks, so it became `//evil.com` | Open redirect after sign-in and after email links, usable for phishing | Control characters, spaces and over-long values are refused, and the path is parsed to confirm it stays on this site. Unit tests added |
+| Confirmation and reset emails built their link from the request `Host` header | A forged `Host` could point a password reset link at an attacker's site | The link now uses `NEXT_PUBLIC_SITE_URL`. In production the app refuses to send if it is not set |
+| No browser security headers | Clickjacking, content sniffing, foreign form targets, data leaving to other sites | Content Security Policy, HSTS, `X-Frame-Options`, `nosniff`, referrer and permissions policies in `next.config.ts`. Admin and account pages are never stored by shared caches |
+| Every setting was readable by visitors, including message caps and order limits | Helps an abuser stay just under the limits | Visitors read a short public list. Staff read the rest |
+| Published item photo files could be overwritten by the seller | Swap a reviewed photo for a different one | Photo files can no longer be updated in place |
+| No ceiling on uploads per person | One account could fill storage | Per-person caps: 1,500 item photos, 20 avatars, 12 ID files |
+| `heic-to/next` needs `unsafe-eval` | Would have forced a weaker CSP | Switched to `heic-to/csp`. Re-tested a real HEIC file in Chromium under the policy |
+| Sign-up and sign-in limits were left at defaults | Password guessing and fake accounts | Explicit limits in `supabase/config.toml`, anonymous sign-in off |
+
+### Checked and found sound
+
+Every public table has row level security. Every security-definer function sets an empty `search_path`. Visitors can run only a short list of functions. `public_profiles` exposes no email or ID data. `/api/cron/*` compares the secret in constant time and refuses weak secrets. Production dependencies have no known vulnerabilities (`npm audit --omit=dev`). Sign-in, sign-up and reset give the same reply whether or not an account exists.
+
+### Known limits and open items
+
+- **The CSP allows inline scripts.** Next.js writes small inline scripts into each page. A per-request nonce would stop pages from being prerendered. The policy still blocks plugins, framing, foreign forms, foreign base tags and connections to other sites. Revisit if the site ever handles payments.
+- **Dev-only advisories.** `npm audit` reports problems in the test tools (`vitest`, `tinypool`, `braces`). They are not shipped to visitors, but do not run the tests against untrusted code. Upgrade vitest when convenient.
+- **Item photos are public by design.** A photo URL works for anyone who has it, even if the listing is later removed. Do not allow personal documents in listing photos.
+- **Waiting list flood guard is site-wide** (300 an hour). A determined bot could fill it and block real sign-ups for that hour. A Turnstile check on `/join` would fix this.
+- **Staff two-factor is built but off in the database** until every moderator has enrolled. Switch on `require_moderator_mfa` then.
+- **No bot check on sign-up yet.** `supabase/config.toml` has the Turnstile settings ready, commented out. The forms must send the token before enabling it.
+- **Add a rate limit at Vercel** for `/api/listings` and the sign-in pages (Firewall, Rate limiting). The app has none of its own.
+- **Not tested against real services.** The headers, limits and policies were checked locally and in a scratch database, not on Supabase or Vercel.

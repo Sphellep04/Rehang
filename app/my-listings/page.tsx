@@ -1,0 +1,98 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { connection } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { getViewerId } from "@/lib/supabase/viewer";
+import { formatPrice, myListings } from "@/lib/listings";
+import { PageLoading } from "../_components/page-loading";
+import { SiteHeader } from "../_components/site-header";
+import { ListingActions } from "./listing-actions";
+
+type SellerStats = {
+  views_7d: number; saves_total: number; sales_30d: number; sales_30d_cents: number; sales_total: number;
+  items: Record<string, { views_7d: number; views_total: number; saves: number }>;
+};
+
+export const metadata: Metadata = { title: "My listings | Rehang" };
+
+export default function MyListingsPage() {
+  return (
+    <Suspense fallback={<PageLoading label="Loading your listings…" />}>
+      <MyListingsContent />
+    </Suspense>
+  );
+}
+
+const statusLabel: Record<string, string> = {
+  draft: "Draft, not published",
+  awaiting_verification: "Waiting for ID verification",
+  active: "Live",
+  reserved: "Reserved for a buyer",
+  sold: "Sold",
+  removed: "Removed",
+};
+
+async function MyListingsContent() {
+  await connection();
+  if (!isSupabaseConfigured()) redirect("/");
+  const viewerId = await getViewerId();
+  if (!viewerId) redirect("/login?next=/my-listings");
+
+  const supabase = await createClient();
+  const [listings, statsResult] = await Promise.all([myListings(supabase, viewerId), supabase.rpc("seller_stats")]);
+  const stats = (statsResult.data ?? null) as SellerStats | null;
+  const soldIds = listings.filter((listing) => listing.status === "sold").map((listing) => listing.id);
+  const { data: completed } = soldIds.length
+    ? await supabase.from("orders").select("item_id").eq("status", "completed").in("item_id", soldIds)
+    : { data: [] };
+  const completedIds = new Set((completed ?? []).map((row) => row.item_id as string));
+
+  const order = ["draft", "awaiting_verification", "active", "reserved", "sold", "removed"];
+  const groups = order.map((status) => ({ status, items: listings.filter((listing) => listing.status === status) })).filter((group) => group.items.length > 0);
+
+  return (
+    <main>
+      <SiteHeader signedIn />
+      <section className="browse">
+        <div className="section-heading"><div><p className="eyebrow">YOUR CLOSET</p><h1 className="browse-title">My <em>listings.</em></h1></div><Link className="button button-coral" href="/sell">Add an item +</Link></div>
+        {stats && listings.length > 0 && (
+          <dl className="order-facts seller-stats" aria-label="Your numbers">
+            <div><dt>Views, last 7 days</dt><dd>{stats.views_7d}</dd></div>
+            <div><dt>Saves on live items</dt><dd>{stats.saves_total}</dd></div>
+            <div><dt>Sold, last 30 days</dt><dd>{stats.sales_30d}{stats.sales_30d > 0 ? ` (${formatPrice(Math.round(stats.sales_30d_cents / 100))})` : ""}</dd></div>
+            <div><dt>Sold in total</dt><dd>{stats.sales_total}</dd></div>
+          </dl>
+        )}
+        {listings.length === 0 && <div className="empty-state"><span>♡</span><h3>Your closet is empty.</h3><p>Add your first item and it will show here.</p><Link className="plain-button" href="/sell">Add an item</Link></div>}
+        {groups.map((group) => (
+          <div key={group.status}>
+            <h2 className="list-heading">{statusLabel[group.status]} ({group.items.length})</h2>
+            <ul className="list-cards">
+              {group.items.map((listing) => {
+                const canRelist = (listing.status === "removed" && listing.removedReason === "seller") || (listing.status === "sold" && !completedIds.has(listing.id));
+                return (
+                  <li className="list-card" key={listing.id}>
+                    <span className="mini-thumb">{listing.image ? <Image src={listing.image} alt="" width={64} height={78} unoptimized /> : <span>♡</span>}</span>
+                    <div className="list-card-main">
+                      <Link href={`/item/${listing.id}`}><b>{listing.title}</b></Link>
+                      <p>{formatPrice(listing.price)} · Size {listing.size} · {listing.category}</p>
+                      <small>{statusLabel[listing.status]}{listing.status === "removed" && listing.removedReason !== "seller" ? " by our team" : ""}</small>
+                      {stats?.items[listing.id] && (listing.status === "active" || listing.status === "reserved") && (
+                        <small className="item-numbers"> · {stats.items[listing.id].views_7d} views this week · {stats.items[listing.id].views_total} in total · {stats.items[listing.id].saves} saved</small>
+                      )}
+                    </div>
+                    <ListingActions itemId={listing.id} status={listing.status} canRelist={canRelist} />
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </section>
+    </main>
+  );
+}

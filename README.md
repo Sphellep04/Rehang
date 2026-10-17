@@ -146,7 +146,7 @@ The MVP does five things well: **sign up and verify, list fast, browse and filte
 
 | Area | Feature | Detail | Spec |
 |---|---|---|---|
-| Accounts | Phone number login with one-time code | Namibian numbers first (+264), no password to forget | [Verification](docs/product/verification-and-limits.md) |
+| Accounts | Email and password sign-in with emailed confirmation and easy password reset | No SMS cost, no phone numbers collected | [Verification](docs/product/verification-and-limits.md) |
 | Accounts | Profile and shop page | Photo, town, bio, shareable link such as `rehang.com.na/thandi` | |
 | Accounts | ID verification | ID plus live selfie, reviewed by hand. Listings go live on approval | [Verification](docs/product/verification-and-limits.md) |
 | Listing | Guided photo flow | Prompts for front, back, label, flaw. Blocks blurry, duplicate or contact-info images | [Listing standards](docs/product/listing-standards.md#photo-rules) |
@@ -165,14 +165,14 @@ The MVP does five things well: **sign up and verify, list fast, browse and filte
 ### Phase 2 additions (public launch)
 
 - **Checkout with held payment** through a licensed partner, released on confirmation or 48 hours after delivery.
-- **Full dispute flow** with refunds and partial refunds.
+- **Full dispute flow** with refunds and partial refunds. **Built** in the database and the moderator screen: a full refund cancels the order and queues the refund, and "Part refund and complete" refunds an amount, completes the order and pays the seller the rest. Nothing moves money until a payment partner is connected.
 - **Courier and postal delivery** with tracking, which opens town-to-town sales.
-- Buyer protection fee and commission collected automatically.
-- Bundle discounts (buy three items from one seller, save 10 percent).
-- Price suggestions from similar sold items.
-- "Brand verified" badge.
-- Push notifications and WhatsApp order updates.
-- Seller stats: views, saves, sales.
+- Buyer protection fee and commission collected automatically. **Built**: both are read from `app_config` when an order is created and deducted from the queued payout. Off until payments are connected.
+- Bundle discounts (buy three items from one seller, save 10 percent). Built for meet-up orders and switched off (`bundles_enabled`): `/bundle/<seller>`, one order for all items, all sold or all released together. Discount percent and minimum come from `app_config`. Features waiting on partners or decisions are listed in [parked features](docs/product/parked-features.md).
+- Price suggestions from similar sold items. **Built:** the sell forms show a low, middle and high price once five similar listings exist (same brand first, then the whole category). Only useful once the marketplace has listings.
+- "Brand verified" badge. **Covered** by the existing "Photos reviewed" label, which a moderator adds after comparing label and stitching photos. A separate badge would add nothing until brands have their own verification process.
+- Push notifications and WhatsApp order updates. **Parked**, waiting on a provider: see [parked features](docs/product/parked-features.md).
+- Seller dashboard at `/dashboard`: what needs attention, sales and commission for 30 days and in total, payout status, 8 weeks of sales, listing counts and the most viewed items. **Built.** Seller stats: views, saves, sales. **Built** on My listings. Views are a daily count with no viewer recorded, and anyone can switch the counts off under Account.
 - Boosts (once there are more than 2,000 active listings).
 
 ### Phase 3 additions (grow)
@@ -180,7 +180,7 @@ The MVP does five things well: **sign up and verify, list fast, browse and filte
 - Split payouts to bank or mobile wallets.
 - Drop-off partner shops and pick-up lockers.
 - Closet Pickup: Rehang collects, photographs and lists items for busy sellers.
-- Charity donation for unsold items.
+- Charity donation for unsold items. Built as a "Give to a children's home" feature, off until `donations_enabled` is set: see [donations](docs/product/donations.md).
 - Native mobile app (iOS and Android) if the web app proves demand.
 - Small business shops for boutiques.
 
@@ -200,8 +200,8 @@ Trust is the product. Rehang uses three layers: **verify the person, verify the 
 
 | Level | How | Unlocks | Limits (starting values) |
 |---|---|---|---|
-| Level 0 | Phone number and one-time code | Browse, favourite, follow, message | 5 new conversations a day |
-| Level 1 | Email plus profile photo | Buy | N$1,000 per order, N$2,000 per 30 days |
+| Level 0 | Email address, not yet confirmed | Browse, favourite, follow, message | 5 new conversations a day |
+| Level 1 | Email confirmed | Buy | N$1,000 per order, N$2,000 per 30 days |
 | Level 2 | Namibian ID or passport photo plus a live selfie match | Sell, and buy with no limit | First 30 days: at most 30 active listings, and brand check over N$1,500 |
 | Trusted seller | 10 completed sales, rating 4.5 or higher, no upheld disputes, account 60+ days old | Badge, search priority, higher payout limits | Lost if the rating drops below 4.3 or a dispute is upheld |
 
@@ -349,7 +349,7 @@ Build a **mobile-first web app (PWA) on Next.js and Supabase** first. It is the 
 |---|---|---|
 | Front end | Next.js (React, TypeScript) with Tailwind CSS, installable as a PWA | One codebase, works on any phone browser, no app store wait |
 | Back end and database | Supabase (Postgres, Auth, Storage, Realtime, Row Level Security) | Login, database, images, chat and access rules in one place |
-| Phone login | One-time codes by SMS through a provider covering MTC and TN Mobile numbers | Simple sign-up, no passwords |
+| Email login | Email and password, with an emailed confirmation link and password reset | No per-message SMS cost, easy password recovery. Decision of 13 Oct 2026, replacing phone codes |
 | Images | Compressed in the browser, stored as WebP in three sizes | Saves data for users and storage cost |
 | Search | Postgres full-text search and filters | Enough for thousands of listings. Add a search service later |
 | Scheduled jobs | `pg_cron` or scheduled functions | Order timers, trusted-seller updates, ID image deletion |
@@ -371,7 +371,7 @@ flowchart TB
         PAY[Payment webhooks<br/>& server actions]
     end
     subgraph Supabase
-        AUTH[Auth<br/>phone OTP]
+        AUTH[Auth<br/>email + password]
         DB[(Postgres<br/>+ RLS + full-text search)]
         CRON[pg_cron<br/>timers & cleanup]
         PUB[Storage: public<br/>item photos]
@@ -436,7 +436,7 @@ Key rules: money is stored as **integer cents**, every table has **RLS**, orders
 
 - Row Level Security on every table, **tested in CI** with pgTAP.
 - ID images in a private bucket with links that expire after 5 minutes. Deleted after the retention period. Never backed up.
-- Rate limits on OTP, sign-up, messages, listings and reports.
+- Rate limits on sign-in, sign-up, messages, listings and reports.
 - Never store card details. Phone numbers are never shown to other users. EXIF location data is stripped from photos.
 - Two-factor login for moderator and admin accounts.
 
@@ -453,7 +453,7 @@ Nothing is scaffolded yet. At milestone M0:
 ```text
 rehang/
 ├── app/                    # Next.js App Router
-│   ├── (auth)/             # login, OTP, onboarding
+│   ├── (auth)/             # login, signup, password reset, onboarding
 │   ├── (shop)/             # feed, search, item page, seller shop [handle]
 │   ├── sell/               # guided photo flow, closet clear-out mode
 │   ├── inbox/              # chat and offers
@@ -484,7 +484,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. Run `npm run lint` and `npm run build` before sharing changes. With Supabase configured, the home feed reads active listings under RLS; without it, the clearly labeled example catalog is shown. Phone OTP requires a configured Supabase SMS provider. Seller drafts compress photos into three WebP sizes. The inbox supports participant-only realtime chat, blocking, and server-side contact-detail flags. Offers, orders, verification review, and moderation are still in progress.
+Open `http://localhost:3000`. Run `npm run lint` and `npm run build` before sharing changes. With Supabase configured, the home feed reads active listings under RLS; without it, the clearly labeled example catalog is shown. Email sign-in needs Supabase email confirmation switched on and, for real use, a custom SMTP sender (Supabase's built-in sender allows only a few emails an hour). Seller drafts compress photos into three WebP sizes. The inbox supports participant-only realtime chat, blocking, and server-side contact-detail flags. Offers, orders, verification review, and moderation are still in progress.
 
 Copy `.env.example` to `.env.local` and fill in the local Supabase URL and publishable key printed by `npx supabase status`. Never put a service-role key in a `NEXT_PUBLIC_` variable or in browser code.
 
@@ -536,66 +536,73 @@ Each milestone should end with something usable on a phone.
 
 #### M1: Accounts and verification (November 2026)
 
-- [x] Implement +264 phone OTP actions and sign-in UI with Supabase SSR session handling (SMS provider still needs confirmation for MTC and TN Mobile)
+- [x] Email and password sign-in, sign-up, confirmation link and password reset with Supabase SSR session handling (replaces phone OTP)
 - [x] Add profile creation on signup and profile completion with name, handle, town and draft terms consent
-- [ ] Confirm end-to-end OTP delivery with an SMS provider for MTC and TN Mobile
-- [ ] Add profile photo and Level 1 email verification
-- [ ] Profile and public shop page at `/[handle]`
-- [ ] ID plus live selfie upload to the private bucket (Level 2), and the ID number hash check
+- [ ] Connect Resend as the SMTP sender (settings are in `supabase/config.toml`) and test confirmation and reset emails end to end
+- [x] Add profile photo at `/account`. Level 1 is granted when the email is confirmed (a photo is not required yet)
+- [x] Profile and public shop page at `/[handle]`
+- [ ] ID plus live selfie upload to the private bucket (Level 2), and the ID number hash check. Done: upload, legal name, ID number hash check (keyed hash, one ID per account), review and approval at `/verify` and `/admin`
 - [ ] `verification_level` gating in RLS and in the UI. Limits read from `app_config`
-- [ ] ID image deletion job
+- [x] ID image deletion job (daily `/api/cron/id-images`, 7 days after a decision; needs `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET`)
 
 #### M2: Listings and discovery (December 2026 – mid January 2027)
 
 - [x] Categories, sizes and size groups seeded ([listing standards](docs/product/listing-standards.md))
 - [x] Single-item listing form with browser WebP compression in three sizes and EXIF removal
-- [ ] Blur, duplicate-photo (perceptual hash) and contact-info checks
+- [x] Photo previews, replace and remove (also on live listings from `/my-listings`), iPhone HEIC support, upload progress with clean-up on failure, blur warning and duplicate-photo flagging for moderators (perceptual hash, compared across sellers on the server)
+- [x] Town filter on browse (`?town=Swakopmund`). A brand filter is still to do
+- [ ] Reading phone numbers out of photos (needs OCR, not built). Blur and duplicate checks warn or flag rather than block, so honest sellers are never stopped by a false alarm
 - [x] Item details form with validation, condition-specific photo checks, and private draft save
-- [ ] Closet clear-out mode with offline drafts. "Waiting for verification" status and auto-publish on approval
+- [x] Closet clear-out mode at `/sell/clear-out`: items and processed photos are kept on the phone (IndexedDB), then uploaded and published in one go, with retries that never make duplicates. Limit: the page has to be open before the signal drops, because pages are deliberately never cached offline. "Waiting for verification" status and auto-publish on ID approval also done
 - [x] Feed reads active listings from Supabase when configured; example catalog remains for local preview
-- [ ] Full-text search and filters (size group, brand, condition, price, town)
-- [ ] Favourites and follow seller
-- [ ] Data saver mode. Low-data targets met
+- [x] Full-text search and filters: prefix search, category, size group, town, brand (40 seeded brands, linked from what the seller types), condition, price, and a "Trusted sellers first" sort
+- [x] Favourites and follow seller (saved list at `/saved`, follower counts on shop pages)
+- [x] Data saver mode: Account switch, or automatic when the phone sends Save-Data. Lists use the 320 pixel photos and stop prefetching. Low-data targets not measured on a real phone
 
 #### M3: Chat and offers (January 2027)
 
 - [x] Realtime chat per item with participant-only RLS, realtime updates, and block
 - [x] Server-side phone-number and social-handle detection with in-chat warnings and message flags
-- [ ] Offers: make, accept, counter, decline, expire (24h), 60% minimum
-- [ ] New-listing daily digest for followers
+- [x] Offers: make, accept, counter, decline, withdraw, expire (24h), 60% minimum (`/offers`; expiry runs in `process_order_timers`, scheduled every 5 minutes with pg_cron when the extension is enabled)
+- [x] New-listing daily digest for followers, plus emailed offer, order, meet-up reminder and price-drop alerts with opt-outs at `/account` (needs `RESEND_API_KEY`, `EMAIL_FROM`, `NEXT_PUBLIC_SITE_URL`). Vercel Hobby crons run once a day, so alerts arrive in a daily batch. For near-real-time email, call `/api/cron/emails` every few minutes from Supabase `pg_cron` with `pg_net`, or from an external pinger, sending `Authorization: Bearer $CRON_SECRET`
 - [ ] SMS for critical events ([notification table](docs/product/orders-meetups-and-delivery.md#notifications))
 
 #### M4: Meet-up orders (late January – early February 2027)
 
-- [ ] Order from an accepted offer or buy-now. Item reserved
-- [ ] Meet-up spots and time slots. Seller confirmation within 24h
-- [ ] Meet-up code: buyer-only display, validity window, lockout after 5 attempts
-- [ ] Timers, cancellations, "they didn't show", strikes ladder
-- [ ] Reviews from both sides after completion
-- [ ] "Report a problem" on orders
+- [x] Order from an accepted offer or buy-now. Item reserved (`/orders`)
+- [ ] Meet-up spots and time slots. Seller confirmation within 24h. Done: propose, confirm and hours checks. Still to do: confirm the real spot addresses and activate them (seeded spots are inactive)
+- [x] Meet-up code: buyer-only display, validity window, lockout after 5 attempts
+- [ ] Timers, cancellations, "they didn't show", strikes ladder. Done in SQL and the order page. Still to do: enable pg_cron on the hosted project so `process_order_timers` runs
+- [x] Reviews from both sides after completion (7 day window; ratings on shop pages, item pages and orders)
+- [x] "Report a problem" on orders: either person can report after the meet-up time or within 7 days of completion, the other side replies once, and a moderator decides (seller at fault, buyer at fault, no fault, or it did happen). Fault gives a strike. A locked meet-up code now goes to the moderators as a problem instead of hanging
 
 #### M5: Trust and moderation (February 2027)
 
-- [ ] Report and block on listings, users and messages
-- [ ] Admin dashboard: verifications, reports, order problems, flags, brand checks, freeze or suspend
-- [ ] Moderator action log. Two-factor login for moderators
-- [ ] Scam signal flags ([list](docs/operations/moderator-guide.md#scam-signals))
-- [ ] Trusted-seller job
+- [x] Report and block on listings, users and messages, including from inside chat. Moderators can read a reported message with the ones around it, and every look is logged
+- [x] My listings (`/my-listings`): edit price and text, mark sold, remove, relist, publish drafts. Price drops notify people who saved the item
+- [x] Account page with data download and account deletion (`/account`; personal details erased, order records kept for the other party)
+- [x] Admin dashboard (`/admin`): verifications, reports, order problems with a decision form, listing flags (duplicate photos and brand checks), account flags, restrict or suspend. Earlier notes: `/admin` queue for reports, ID checks and orders under review, with remove, restrict and suspend. Still to do: flags, brand checks, resolving disputed orders
+- [x] Moderator action log, and two-factor login for moderators (authenticator app at `/admin/security`). The queue always needs two-factor; the database also refuses staff actions without it once `require_moderator_mfa` is switched on (see the runbook)
+- [x] Scam signal flags ([list](docs/operations/moderator-guide.md#scam-signals)): new accounts with several expensive listings, two or more strikes, repeated contact details across chats, and duplicate photos, and a price under a quarter of the middle price for the same brand and type (needs five comparables). Not built, on purpose: several accounts on one device, because it needs device fingerprints that go against keeping user data minimal. The price check only works once a brand and category have five listings
+- [x] Trusted-seller job (daily): 10 completed sales, at least 5 reviews averaging 4.5 or more, account 60+ days old, no upheld dispute in 180 days. Lost under 4.3 or after an upheld dispute. Runs in `pg_cron` when available and from `/api/cron/trust`. Search priority for trusted sellers is not built
 
 #### M6: Pilot launch prep (February 2027)
 
-- [ ] Policies published: terms, privacy, seller rules, buyer protection, prohibited items
+- [x] Policies published at `/terms`, `/privacy`, `/seller-rules`, `/buyer-protection`, `/prohibited-items` (from `docs/policies`; still needs a lawyer's review), plus a `/safe-spots` page
 - [ ] [Security checklist](docs/engineering/security-and-backups.md#pre-pilot-security-checklist) complete
-- [ ] Analytics dashboards ([events](docs/engineering/analytics-events.md))
-- [ ] Waiting list, invite codes, share links with preview images
+- [x] Analytics: first-party `track_event` (allowlisted, throttled, no personal data) and a moderator page at `/admin/metrics` with the north star (completed orders with no dispute). Funnel events beyond shares and installs are counted from the order, listing and dispute tables; see [events](docs/engineering/analytics-events.md)
+- [x] Waiting list (`/join`) and invite codes (admin creates or emails them; `signup_requires_invite` makes sign-up invite-only, enforced in the database)
+- [x] Share links with preview images: Share button (phone share sheet, WhatsApp, copy link) on items and shops, Open Graph and Twitter tags, a text card when a page has no photo. Unverified in real WhatsApp or Facebook until deployed
 - [ ] [Pilot launch checklist](docs/operations/launch-checklist.md) done
 
 #### M7: Held payments (March 2027, during the pilot, behind a feature flag)
 
-- [ ] Gateway integration: checkout, signed webhooks, held funds, release, refunds
-- [ ] Commission and buyer fee from `app_config`. Founding-seller exemption dates
-- [ ] Full dispute flow with evidence upload
-- [ ] Courier and post orders with a tracking number and the 3-day ship timer
+- [x] Giving to children's homes: `/donate`, `/donate/give` and `/admin/donations`, with team review and staff-only home contacts (tested in SQL; **needs real, checked homes and a handover plan before switching on**)
+- [x] Held-payment layer, provider-neutral: `record_payment` (idempotent, checks the amount), refunds and payouts queued as `pending` rows for the partner's adapter, `settle_money_movement` to close them, and a signed webhook at `/api/payments/webhook` (HMAC with a 5 minute replay window, needs `PAYMENT_WEBHOOK_SECRET`). Off until `payments_enabled` and `courier_enabled` are set. **Tested only against a local scratch database and unit tests. No payment partner is connected.**
+- [ ] Gateway adapter for the chosen partner: checkout page, translating the partner's webhook into the neutral format, and carrying out the queued refunds and payouts
+- [x] Commission and buyer fee from `app_config` (taken when the order is created). [ ] Founding-seller exemption dates
+- [x] Dispute flow extended to posted orders (reason "not received"); [ ] evidence upload for posted orders
+- [x] Courier and post orders in the database: `buy_with_delivery`, `mark_shipped`, `confirm_received`, `accept_delivery`, the 3-day ship timer, 14 day auto-delivery and the 48 hour confirm window (`process_delivery_timers`, scheduled with `pg_cron`). [x] Screens for sellers to set postage, buyers to enter an address, pay, post, track and confirm (payment uses a staging-only simulator until a partner is connected; **screens not yet clicked through in a browser against a real database**)
 - [ ] Payout reconciliation report
 - [ ] Tested with real small transactions before switching on
 
@@ -1053,3 +1060,8 @@ Searched on 29 September 2026. Figures for costs, fees and targets in this plan 
 - PayAtlas: accepting payments in Namibia
 
 ---
+
+
+## Checks and launch
+
+`npm run lint`, `npm run typecheck`, `npm test` (unit tests) and `npm run build` run in GitHub Actions on every pull request, alongside the database tests (`supabase test db`). The launch steps that need your accounts are in [docs/operations/staging-runbook.md](docs/operations/staging-runbook.md). The site is installable as a PWA and shows an offline page without a connection. It deliberately does not cache pages or account data.

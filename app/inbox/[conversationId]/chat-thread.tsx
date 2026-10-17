@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { ReportButton } from "../../_components/report-button";
 
 export type ChatMessage = {
   id: string;
@@ -111,13 +112,14 @@ export function ChatThread({
 
   return (
     <div className="chat-body">
-      <div className="chat-toolbar"><p className="chat-safety-note">Keep payments and conversations in Rehang. We never show personal phone numbers.</p><button className="text-link" type="button" onClick={blockUser} disabled={blocked}>{blocked ? "Blocked" : "Block"}</button></div>
+      <div className="chat-toolbar"><p className="chat-safety-note">Keep payments and conversations in Rehang. We never show personal phone numbers.</p><span className="chat-toolbar-actions"><ReportButton targetType="user" targetId={otherUserId} signedIn label="Report person" /><button className="text-link" type="button" onClick={blockUser} disabled={blocked}>{blocked ? "Blocked" : "Block"}</button></span></div>
       <div className="chat-messages" aria-live="polite">
         {messages.length === 0 ? <p className="chat-empty">Start with a question about the item.</p> : messages.map((message) => {
           const ownMessage = message.sender_id === currentUserId;
           return <article className={`chat-message ${ownMessage ? "mine" : "theirs"}`} key={message.id}>
             <p>{message.body}</p>
             {message.flagged_contact && <small className="contact-warning">Contact details detected. Keep the trade in Rehang.</small>}
+            {!ownMessage && <ReportButton targetType="message" targetId={message.id} signedIn label="Report message" />}
             <time dateTime={message.created_at}>{new Date(message.created_at).toLocaleTimeString("en-NA", { hour: "numeric", minute: "2-digit" })}</time>
           </article>;
         })}

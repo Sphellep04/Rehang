@@ -6,8 +6,8 @@
 
 ## Plain-language summary
 - We collect what we need to run a safe marketplace, and nothing more.
-- Your phone number is never shown to other users.
-- ID photos are used only to verify you. They are seen only by our moderators and **deleted within 30 days** ⚖️.
+- Your email address is never shown to other users.
+- ID photos are used only to verify you. They are seen only by our moderators and **deleted 7 days after we decide** ⚖️.
 - We don't sell your data.
 - You can download or delete your data at any time.
 
@@ -15,33 +15,32 @@
 
 | Data | Why | Legal basis ⚖️ |
 |---|---|---|
-| Phone number | Log-in, security, order SMS alerts | Needed to provide the service |
+| Email address and password (the password is stored only as a one-way hash by our sign-in provider) | Log-in, account recovery, security, optional order and reminder emails | Needed to provide the service |
 | Name, profile photo, town, bio | Your public profile and shop | Needed to provide the service |
-| Email (optional until Level 1) | Account recovery, receipts | Needed to provide the service |
 | ID document image and selfie | Verify identity and age, prevent fraud | Consent. Legitimate interest in preventing fraud |
 | ID number | Stored only as a one-way code (hash), so one person can't open many seller accounts | Legitimate interest in preventing fraud |
 | Listings, photos, messages, offers, orders, reviews | Running the marketplace, resolving disputes | Needed to provide the service |
-| Device and usage data (pages viewed, app events) | Improving the app, security | Legitimate interest. You can opt out of analytics |
+| Usage counts (for example a share click, an app install or a view of an item). Item views are a plain daily number with no viewer attached. Share and install counts are tied to your account only if you are signed in | Showing sellers their numbers, improving the app, security | Legitimate interest. You can switch these off under Account, on each phone or browser |
 | Payment references (Phase 2) | Processing orders. **We never see or store card numbers** | Needed to provide the service |
 
 ## 2. Who can see your data
-- **Other users:** your public profile, listings, reviews and messages you send them. Never your phone number, legal name, email or ID.
+- **Other users:** your public profile, listings, reviews and messages you send them. Never your email, legal name or ID.
 - **Rehang moderators:** what they need to verify users, handle reports and decide disputes. Every access is logged.
-- **Service providers** who process data for us under contract: hosting and database (Supabase), web hosting (Vercel), SMS provider, error tracking, analytics, payment partner (Phase 2). ⚖️ Some of these providers store data outside Namibia. Confirm the rules for transferring data abroad.
+- **Service providers** who process data for us under contract: hosting and database (Supabase), web hosting (Vercel), email provider (Resend), error tracking, payment partner (Phase 2). ⚖️ Some of these providers store data outside Namibia. Confirm the rules for transferring data abroad.
 - **Authorities:** when the law requires it, for example the Namibian Police investigating fraud or stolen goods.
 
 ## 3. How long we keep data
 
 | Data | Kept for |
 |---|---|
-| ID images and selfies | Deleted within 30 days after the verification decision ⚖️ |
+| ID images and selfies | Deleted 7 days after the verification decision ⚖️ |
 | Verification result (verified yes or no, date) | While your account exists |
 | Messages | While your account exists, then [2 years] for dispute and fraud purposes ⚖️ |
 | Order records | [5 years] for tax and accounting ⚖️ |
 | Deleted accounts | Profile and listings removed within 30 days. Order records anonymised |
 
 ## 4. Security
-Encrypted connections. Private, encrypted storage for ID documents. Strict access controls. Two-factor login for staff. Regular backups (never of ID images). See our [security measures](../engineering/security-and-backups.md).
+Encrypted connections. Private, encrypted storage for ID documents. Strict access controls. Two-factor login for staff (authenticator app). Regular backups (never of ID images). See our [security measures](https://github.com/Sphellep04/Rehang/blob/main/docs/engineering/security-and-backups.md).
 
 ## 5. Your rights
 You can ask to see, correct, download or delete your data, and withdraw consent (for example, for analytics). Use settings in the app, or contact privacy@[domain]. We reply within 30 days.

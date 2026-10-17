@@ -43,6 +43,8 @@ Review the account when **two or more** of these appear:
 - Several accounts from the same device or with the same ID hash
 - Many cancelled or no-show orders
 
+The system now raises these flags by itself and lists them under **Account flags** and **Listing flags** in `/admin`: a new account with three or more listings over N$1,000, two or more strikes in 90 days, contact details in three messages across two chats in a week, and photos that closely match another seller's. A listing priced under a quarter of the middle price for the same brand and type of item (once five similar listings exist) appears as **Price far below similar listings**. It can be an honest bargain, so look at the photos and the seller's history before acting. Several accounts on one device is not detected, because Rehang does not collect device fingerprints; the same ID hash is still caught at verification. Items over N$1,500 also appear as **Brand checks**. Approving one adds a "Photos reviewed" label, which is not a guarantee of authenticity. Changing the photos later removes the label.
+
 Actions: hold the listings → ask for extra photos (item with a handwritten note saying "Rehang" and the date) → re-verify → suspend if not satisfied.
 
 ## Order problems and disputes
@@ -55,6 +57,9 @@ Actions: hold the listings → ask for extra photos (item with a handwritten not
    - Not enough evidence → ask each side for more once (24 hours), then decide on what's available.
    - Change of mind → the seller wins.
 4. Write a decision note both sides can read: facts, rule applied, outcome.
+5. In `/admin` the buttons are **Seller at fault** and **Buyer at fault** (the order is cancelled, or stays completed, and that person gets a strike), **No fault** (cancelled, no strike) and **It did happen** (marks a disputed or locked order completed). Payment is cash at the meet-up, so there are no refunds to make in Phase 1.
+6. **Orders paid online (when payments are on):** the same buttons apply, and a cancelled order queues a full refund to the buyer. For a posted order a **Part refund and complete** box also appears. Enter the amount (at least N$1, less than item plus postage) and a reason both people will read. The order completes, the buyer's refund is queued and the seller's payout is reduced by the same amount. Refunds and payouts are only queued: the payment partner's adapter carries them out.
+6. To read a reported chat message, use **Read the conversation**. It shows the message and those around it, and the look is written to the action log.
 
 ## Ban ladder
 
