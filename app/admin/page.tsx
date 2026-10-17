@@ -100,7 +100,7 @@ async function AdminContent() {
     <main>
       <SiteHeader signedIn />
       <section className="browse">
-        <div className="section-heading"><div><p className="eyebrow">STAFF ONLY</p><h1 className="browse-title">Moderation <em>queue.</em></h1></div><Link href="/admin/metrics">Weekly numbers</Link></div>
+        <div className="section-heading"><div><p className="eyebrow">STAFF ONLY</p><h1 className="browse-title">Moderation <em>queue.</em></h1></div><span><Link href="/admin/donations">Gifts</Link> · <Link href="/admin/metrics">Weekly numbers</Link></span></div>
 
         <h2 className="list-heading">Reports ({reports.length})</h2>
         {reports.length === 0 && <p className="trade-hint">Nothing waiting. Nice.</p>}

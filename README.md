@@ -180,7 +180,7 @@ The MVP does five things well: **sign up and verify, list fast, browse and filte
 - Split payouts to bank or mobile wallets.
 - Drop-off partner shops and pick-up lockers.
 - Closet Pickup: Rehang collects, photographs and lists items for busy sellers.
-- Charity donation for unsold items.
+- Charity donation for unsold items. Built as a "Give to a children's home" feature, off until `donations_enabled` is set: see [donations](docs/product/donations.md).
 - Native mobile app (iOS and Android) if the web app proves demand.
 - Small business shops for boutiques.
 
@@ -597,6 +597,7 @@ Each milestone should end with something usable on a phone.
 
 #### M7: Held payments (March 2027, during the pilot, behind a feature flag)
 
+- [x] Giving to children's homes: `/donate`, `/donate/give` and `/admin/donations`, with team review and staff-only home contacts (tested in SQL; **needs real, checked homes and a handover plan before switching on**)
 - [x] Held-payment layer, provider-neutral: `record_payment` (idempotent, checks the amount), refunds and payouts queued as `pending` rows for the partner's adapter, `settle_money_movement` to close them, and a signed webhook at `/api/payments/webhook` (HMAC with a 5 minute replay window, needs `PAYMENT_WEBHOOK_SECRET`). Off until `payments_enabled` and `courier_enabled` are set. **Tested only against a local scratch database and unit tests. No payment partner is connected.**
 - [ ] Gateway adapter for the chosen partner: checkout page, translating the partner's webhook into the neutral format, and carrying out the queued refunds and payouts
 - [x] Commission and buyer fee from `app_config` (taken when the order is created). [ ] Founding-seller exemption dates

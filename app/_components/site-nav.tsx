@@ -15,6 +15,7 @@ const accountLinks = [
   { href: "/inbox", label: "Messages" },
   { href: "/offers", label: "Offers" },
   { href: "/orders", label: "Orders" },
+  { href: "/donate", label: "Give to a children's home" },
   { href: "/notifications", label: "Updates" },
   { href: "/account", label: "Account and settings" },
 ];

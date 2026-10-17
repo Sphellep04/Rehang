@@ -35,6 +35,9 @@ function copyFor(kind: string, payload: Record<string, unknown>): Copy | null {
     case "payment_failed": return { subject: "Your payment did not go through", line: "Nothing was taken. Open the order to try again before it times out.", path: order, cta: "Open order" };
     case "refund_pending": return { subject: "Your refund is on its way", line: "Your payment is being returned. It can take a few days to show in your account.", path: order, cta: "Open order" };
     case "payout_pending": return { subject: "Your payout is being sent", line: "The buyer is happy, so your money is on its way to you.", path: order, cta: "Open order" };
+    case "donation_accepted": return { subject: "Your gift was accepted", line: "A children's home would love your item. The Rehang team will be in touch about the handover.", path: "/donate/give", cta: "See your gifts" };
+    case "donation_declined": return { subject: "Your gift could not be placed", line: "The home could not take this item. It is back on your listings. Open the page to read why.", path: "/donate/give", cta: "See your gifts" };
+    case "donation_collected": return { subject: "Your gift reached the home", line: "Thank you. Your item has been handed over to a children's home.", path: "/donate/give", cta: "See your gifts" };
     case "order_cancelled": return { subject: "An order was cancelled", line: "One of your orders was cancelled. Open it to see the reason.", path: order, cta: "Open order" };
     case "cancel_agreement_requested": return { subject: "A request to cancel an order", line: "The other person asked to cancel together. Please accept or decline.", path: order, cta: "Open order" };
     case "no_show_reported": return { subject: "A no-show was reported on your order", line: "If this is wrong, you can dispute it from the order page.", path: order, cta: "Respond" };

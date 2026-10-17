@@ -287,7 +287,7 @@ export default function Home() {
       </section>
 
       <section className="seller-band" id="sell"><div><p className="eyebrow">SELLING IN WINDHOEK</p><h2>Want to list your clothes?</h2></div><Link className="button button-paper" href="/sell">Start a listing <span>↗</span></Link></section>
-      <footer className="site-footer"><a className="wordmark" href="#top"><HangerMark />rehang<span className="coral">.</span></a><span className="footer-links"><Link href="/safe-spots">Safe spots</Link><Link href="/seller-rules">Seller rules</Link><Link href="/buyer-protection">Buyer protection</Link><Link href="/prohibited-items">Prohibited items</Link><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link></span><span>Made for Namibia <b>✳</b></span></footer>
+      <footer className="site-footer"><a className="wordmark" href="#top"><HangerMark />rehang<span className="coral">.</span></a><span className="footer-links"><Link href="/donate">Give</Link><Link href="/safe-spots">Safe spots</Link><Link href="/seller-rules">Seller rules</Link><Link href="/buyer-protection">Buyer protection</Link><Link href="/prohibited-items">Prohibited items</Link><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link></span><span>Made for Namibia <b>✳</b></span></footer>
 
       {selected && (
         <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
