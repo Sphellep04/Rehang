@@ -110,6 +110,10 @@ export function dollarsToCents(value: string): number | null {
 
 export const orderStatusLabel: Record<string, string> = {
   awaiting_meetup: "Awaiting meet-up",
+  awaiting_payment: "Awaiting payment",
+  paid_held: "Paid, to be posted",
+  shipped: "On its way",
+  delivered: "Delivered",
   completed: "Completed",
   cancelled: "Cancelled",
   disputed: "Under review",

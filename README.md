@@ -602,7 +602,7 @@ Each milestone should end with something usable on a phone.
 - [ ] Gateway adapter for the chosen partner: checkout page, translating the partner's webhook into the neutral format, and carrying out the queued refunds and payouts
 - [x] Commission and buyer fee from `app_config` (taken when the order is created). [ ] Founding-seller exemption dates
 - [x] Dispute flow extended to posted orders (reason "not received"); [ ] evidence upload for posted orders
-- [x] Courier and post orders in the database: `buy_with_delivery`, `mark_shipped`, `confirm_received`, `accept_delivery`, the 3-day ship timer, 14 day auto-delivery and the 48 hour confirm window (`process_delivery_timers`, scheduled with `pg_cron`). [ ] Screens for sellers to set postage, buyers to enter an address and for tracking
+- [x] Courier and post orders in the database: `buy_with_delivery`, `mark_shipped`, `confirm_received`, `accept_delivery`, the 3-day ship timer, 14 day auto-delivery and the 48 hour confirm window (`process_delivery_timers`, scheduled with `pg_cron`). [x] Screens for sellers to set postage, buyers to enter an address, pay, post, track and confirm (payment uses a staging-only simulator until a partner is connected; **screens not yet clicked through in a browser against a real database**)
 - [ ] Payout reconciliation report
 - [ ] Tested with real small transactions before switching on
 

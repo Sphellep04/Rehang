@@ -12,6 +12,8 @@ import { SiteHeader } from "../../_components/site-header";
 import { OrderActions, type Spot } from "./order-actions";
 import { ReviewForm } from "./review-form";
 import { DisputePanel } from "./dispute-panel";
+import { DeliveryActions } from "./delivery-actions";
+import { simulatorAvailable } from "@/lib/payments/simulator";
 import { Stars } from "../../_components/stars";
 
 export const metadata: Metadata = { title: "Order | Rehang" };
@@ -38,7 +40,7 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
   // Columns are listed on purpose: select * on orders is refused for signed-in clients.
   const { data: order } = await supabase
     .from("orders")
-    .select("id,item_id,buyer_id,seller_id,amount_cents,status,meetup_spot_id,meetup_at,meetup_confirmed_at,confirm_by,completed_at,cancelled_at,cancel_reason,code_attempts,created_at")
+    .select("id,item_id,buyer_id,seller_id,amount_cents,status,meetup_spot_id,meetup_at,meetup_confirmed_at,confirm_by,completed_at,cancelled_at,cancel_reason,code_attempts,created_at,delivery_method,shipping_cents,buyer_fee_cents,delivery_address,tracking_number,ship_by,shipped_at,delivered_at")
     .eq("id", id)
     .maybeSingle();
   if (!order) notFound();
@@ -82,7 +84,11 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
   const disputed = eventList.some((e) => e.event === "no_show_disputed");
   const agreementByOther = eventList.some((e) => e.event === "cancel_agreement_requested" && e.actor_id !== viewerId && now - new Date(e.created_at).getTime() < 48 * 3600 * 1000);
 
+  const posted = order.delivery_method === "courier" || order.delivery_method === "post";
+  const postedLive = posted && ["awaiting_payment", "paid_held", "shipped", "delivered"].includes(order.status);
+  const totalCents = Number(order.amount_cents) + Number(order.shipping_cents ?? 0) + Number(order.buyer_fee_cents ?? 0);
   const canReportProblem = !dispute && (
+    (posted && (order.status === "shipped" || order.status === "delivered")) ||
     (order.status === "awaiting_meetup" && confirmed && Boolean(order.meetup_at) && now >= new Date(order.meetup_at as string).getTime())
     || (order.status === "completed" && Boolean(order.completed_at) && now - new Date(order.completed_at as string).getTime() < 7 * 24 * 3600 * 1000)
   );
@@ -127,7 +133,7 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
           </div>
         )}
         {canRespond && <DisputePanel orderId={order.id} mode="respond" />}
-        {canReportProblem && <DisputePanel orderId={order.id} mode="report" />}
+        {canReportProblem && <DisputePanel orderId={order.id} mode="report" posted={posted} />}
         {disputed && open && <p className="trade-hint">A no-show report is under review.</p>}
 
         {order.status === "completed" && (
@@ -139,6 +145,21 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
                 : <p className="trade-hint">The 7 day window for reviews has closed.</p>}
             {theirReview && <p className="trade-hint">{otherName} reviewed you: <Stars value={theirReview.rating as number} count={1} /> {theirReview.comment ? `“${theirReview.comment}”` : ""}</p>}
           </div>
+        )}
+
+        {postedLive && (
+          <>
+            <dl className="order-facts">
+              <div><dt>Delivery</dt><dd>{order.delivery_method === "courier" ? "Courier" : "Post office"}</dd></div>
+              <div><dt>Total to pay</dt><dd>N${(totalCents / 100).toLocaleString("en-ZA")} (item + postage{Number(order.buyer_fee_cents) > 0 ? " + fee" : ""})</dd></div>
+              {order.status === "awaiting_payment" && order.confirm_by && <div><dt>Pay before</dt><dd>{formatWindhoek(order.confirm_by)}</dd></div>}
+              {order.status === "paid_held" && order.ship_by && <div><dt>{role === "seller" ? "Post it before" : "Seller will post by"}</dt><dd>{formatWindhoek(order.ship_by)}</dd></div>}
+              {order.tracking_number && <div><dt>Tracking number</dt><dd>{order.tracking_number}</dd></div>}
+              {order.status === "delivered" && order.confirm_by && <div><dt>Confirm or report by</dt><dd>{formatWindhoek(order.confirm_by)}</dd></div>}
+              {role === "seller" && order.delivery_address && order.status !== "awaiting_payment" && <div><dt>Deliver to</dt><dd style={{ whiteSpace: "pre-line" }}>{order.delivery_address}</dd></div>}
+            </dl>
+            <DeliveryActions orderId={order.id} role={role} status={order.status} simulator={simulatorAvailable()} />
+          </>
         )}
 
         {open && (

@@ -39,12 +39,14 @@ async function OrdersContent() {
   const { data: items } = itemIds.length ? await supabase.from("items").select("id,title").in("id", itemIds) : { data: [] };
   const titleById = new Map((items ?? []).map((item) => [item.id as string, item.title as string]));
 
-  const open = orders.filter((order) => order.status === "awaiting_meetup");
-  const past = orders.filter((order) => order.status !== "awaiting_meetup");
+  const liveStatuses = ["awaiting_meetup", "awaiting_payment", "paid_held", "shipped", "delivered"];
+  const open = orders.filter((order) => liveStatuses.includes(order.status));
+  const past = orders.filter((order) => !liveStatuses.includes(order.status));
 
   function Row({ order }: { order: (typeof orders)[number] }) {
     const buying = order.buyer_id === viewerId;
-    const next = order.status !== "awaiting_meetup" ? "" : order.meetup_confirmed_at ? `Meet ${formatWindhoek(order.meetup_at)}` : order.meetup_at ? (buying ? "Waiting for the seller to confirm" : "Confirm the meet-up") : (buying ? "Choose a spot and time" : "Waiting for the buyer to pick a time");
+    const deliveryNext: Record<string, [string, string]> = { awaiting_payment: ["Pay to confirm", "Waiting for payment"], paid_held: ["Waiting for the seller to post", "Post it and add the tracking number"], shipped: ["Confirm when it arrives", "On its way"], delivered: ["Accept or report a problem", "Waiting for the buyer to confirm"] };
+    const next = deliveryNext[order.status] ? deliveryNext[order.status][buying ? 0 : 1] : order.status !== "awaiting_meetup" ? "" : order.meetup_confirmed_at ? `Meet ${formatWindhoek(order.meetup_at)}` : order.meetup_at ? (buying ? "Waiting for the seller to confirm" : "Confirm the meet-up") : (buying ? "Choose a spot and time" : "Waiting for the buyer to pick a time");
     return (
       <li className="list-card">
         <div className="list-card-main">

@@ -108,6 +108,10 @@ Built in the database and switched off by default. Both `courier_enabled` and `p
 5. The buyer taps "received", which starts a 48 hour window (`delivery_confirm_hours`) to accept or report a problem. If the buyer never answers, a parcel posted 14 days ago (`delivery_wait_days`) counts as delivered and the same window starts. Silence for 48 hours completes the order.
 6. On completion a payout of item + postage minus commission is queued. On cancellation a refund of the full amount is queued. A partner adapter must carry out the queued rows and call `settle_money_movement`.
 
+**Screens:** sellers set a postage price in the listing form and the edit page. Buyers see "Have it delivered" on the item page. The order page shows the total, deadlines, tracking number and the right button for each stage (pay, "I have posted it", "I have received it", "Yes, release the payment"). A posted order can be reported as "not received".
+
+**Trying it on staging without a payment partner:** set `PAYMENTS_SIMULATOR=true`, `SUPABASE_SERVICE_ROLE_KEY`, and turn on `courier_enabled` and `payments_enabled`. A "Simulate payment" button then appears for the buyer. It is ignored when `VERCEL_ENV` is `production`. It calls the same `record_payment` function as the real webhook, but it does not exercise the webhook route or its signature check.
+
 If `pg_cron` is not available, call `select public.process_delivery_timers();` every five minutes alongside `process_order_timers()`.
 
 ## Problems and disputes

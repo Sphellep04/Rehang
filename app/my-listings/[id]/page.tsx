@@ -34,11 +34,13 @@ async function EditContent({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
   const { data: item } = await supabase
     .from("items")
-    .select("id,title,description,brand_text,price_cents,status,condition")
+    .select("id,title,description,brand_text,price_cents,shipping_cents,status,condition")
     .eq("id", id)
     .eq("seller_id", viewerId)
     .maybeSingle();
   if (!item) notFound();
+  const { data: flagRows } = await supabase.from("app_config").select("key,value").in("key", ["courier_enabled", "payments_enabled"]);
+  const delivery = (flagRows ?? []).length === 2 && (flagRows ?? []).every((row) => row.value === true);
   const { data: photoRows } = await supabase
     .from("item_photos")
     .select("id,kind,position,path_thumb,path_card,path_full,width,height,phash")
@@ -63,7 +65,7 @@ async function EditContent({ params }: { params: Promise<{ id: string }> }) {
         <h1 className="browse-title">Edit <em>listing.</em></h1>
         {editable
           ? <>
-              <EditForm itemId={item.id as string} title={item.title as string} description={(item.description as string | null) ?? ""} brand={(item.brand_text as string | null) ?? ""} priceDollars={Math.round(Number(item.price_cents) / 100)} live={item.status === "active"} />
+              <EditForm itemId={item.id as string} title={item.title as string} description={(item.description as string | null) ?? ""} brand={(item.brand_text as string | null) ?? ""} priceDollars={Math.round(Number(item.price_cents) / 100)} live={item.status === "active"} delivery={delivery} postageDollars={item.shipping_cents == null ? null : Math.round(Number(item.shipping_cents) / 100)} />
               <PhotoEditor itemId={item.id as string} condition={item.condition as string} stored={stored} />
             </>
           : <p className="trade-hint">This listing can&apos;t be edited while it is {item.status === "reserved" ? "reserved for a buyer" : item.status}.</p>}

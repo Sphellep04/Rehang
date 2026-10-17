@@ -43,6 +43,8 @@ async function SellContent() {
     supabase.from("users").select("terms_accepted_at,verification_level,town_id").eq("id", claimsData.claims.sub).maybeSingle(),
     supabase.from("brands").select("name").order("name"),
   ]);
+  const { data: flagRows } = await supabase.from("app_config").select("key,value").in("key", ["courier_enabled", "payments_enabled"]);
+  const delivery = (flagRows ?? []).length === 2 && (flagRows ?? []).every((row) => row.value === true);
 
   if (!profile?.terms_accepted_at) redirect("/onboarding");
 
@@ -71,6 +73,7 @@ async function SellContent() {
           defaultTownId={profile.town_id}
           verificationLevel={profile.verification_level}
           brands={(brandRows ?? []).map((row) => row.name as string)}
+          delivery={delivery}
         />
       </div>
     </main>

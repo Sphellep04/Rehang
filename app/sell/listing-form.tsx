@@ -22,6 +22,7 @@ export function ListingForm({
   defaultTownId,
   verificationLevel,
   brands = [],
+  delivery = false,
 }: {
   categories: CategoryOption[];
   sizes: SizeOption[];
@@ -29,6 +30,7 @@ export function ListingForm({
   defaultTownId: number | null;
   verificationLevel: string;
   brands?: string[];
+  delivery?: boolean;
 }) {
   const router = useRouter();
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
@@ -59,6 +61,9 @@ export function ListingForm({
     const brandText = String(formData.get("brand_text") ?? "").trim();
     const condition = String(formData.get("condition") ?? "");
     const price = Number(formData.get("price"));
+    const postageText = String(formData.get("postage") ?? "").trim();
+    const postage = postageText === "" ? null : Number(postageText);
+    if (postage !== null && (!Number.isInteger(postage) || postage < 0 || postage > 1000)) return setMessage("Postage must be a whole amount from N$0 to N$1,000, or empty for meet-up only.");
 
     const problem = listingProblem({ title, description, price, colourCount: selectedColors.length, condition, photoKinds: photos.map((photo) => photo.kind) });
     if (problem) return setMessage(problem);
@@ -85,6 +90,7 @@ export function ListingForm({
             brand_text: brandText || null,
             colours: selectedColors,
             price_cents: price * 100,
+            ...(delivery && postage !== null ? { shipping_cents: postage * 100 } : {}),
             town_id: Number(formData.get("town_id")),
           })
           .select("id")
@@ -144,6 +150,7 @@ export function ListingForm({
           <label className="field-span-two" htmlFor="listing-description">Description <span>(optional · 500 characters)</span><textarea id="listing-description" name="description" maxLength={500} placeholder="Fit, fabric, measurements or anything a buyer should know" /></label>
           <fieldset className="field-span-two color-field"><legend>Colour <span>(choose 1 or 2)</span></legend><div className="color-options">{colorChoices.map((color) => <label className="color-option" key={color}><input type="checkbox" checked={selectedColors.includes(color)} onChange={() => toggleColor(color)} /><span className="color-swatch" data-color={color.toLowerCase().replaceAll("/", "-")} />{color}</label>)}</div></fieldset>
           <label htmlFor="listing-price">Price in N$<input id="listing-price" name="price" type="number" min={20} max={20000} step={1} placeholder="250" required /></label>
+          {delivery && <label className="field-span-two" htmlFor="listing-postage">Postage price in N$ <span>(optional · leave empty for meet-up only)</span><input id="listing-postage" name="postage" type="number" inputMode="numeric" min={0} max={1000} step={1} placeholder="e.g. 60" /></label>}
           <div className="field-span-two"><PriceHint categoryId={hintInputs.category} condition={hintInputs.condition} brand={hintInputs.brand} /></div>
           <label htmlFor="listing-town">Town<select id="listing-town" name="town_id" required defaultValue={defaultTownId?.toString() ?? ""}><option value="" disabled>Choose a town</option>{towns.map((town) => <option value={town.id} key={town.id}>{town.name}</option>)}</select></label>
         </div>

@@ -12,9 +12,9 @@ const reasons = [
 ] as const;
 
 /** "Report a problem" form, or the answer form when the other person reported one. */
-export function DisputePanel({ orderId, mode }: { orderId: string; mode: "report" | "respond" }) {
+export function DisputePanel({ orderId, mode, posted = false }: { orderId: string; mode: "report" | "respond"; posted?: boolean }) {
   const router = useRouter();
-  const [reason, setReason] = useState<string>("not_as_described");
+  const [reason, setReason] = useState<string>(posted ? "not_received" : "not_as_described");
   const [statement, setStatement] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -41,7 +41,7 @@ export function DisputePanel({ orderId, mode }: { orderId: string; mode: "report
         <>
           <label htmlFor="dispute-reason">What happened?</label>
           <select id="dispute-reason" value={reason} onChange={(event) => setReason(event.target.value)}>
-            {reasons.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            {(posted ? ([["not_received", "The item has not arrived"], ...reasons] as const) : reasons).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </>
       )}

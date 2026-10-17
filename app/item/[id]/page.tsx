@@ -16,6 +16,7 @@ import { ReportButton } from "../../_components/report-button";
 import { SaveButton } from "../../_components/save-button";
 import { Stars } from "../../_components/stars";
 import { TradePanel } from "../../_components/trade-panel";
+import { DeliveryPanel } from "../../_components/delivery-panel";
 import { SiteHeader } from "../../_components/site-header";
 import { ShareButton } from "../../_components/share-button";
 import { ViewCounter } from "../../_components/view-counter";
@@ -54,7 +55,7 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
   const signedIn = viewerId !== null;
   const isOwner = viewerId === listing.sellerId;
 
-  const [favouriteCount, saved, followResult, more, offerConfig, ratingResult] = await Promise.all([
+  const [favouriteCount, saved, followResult, more, offerConfig, ratingResult, deliveryRow, deliveryFlags] = await Promise.all([
     supabase.rpc("item_favourite_count", { p_item: listing.id }),
     signedIn ? savedIdsFor(supabase, [listing.id]) : Promise.resolve(new Set<string>()),
     signedIn && !isOwner
@@ -63,7 +64,13 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
     listingsForSeller(supabase, listing.sellerId, "active"),
     supabase.from("app_config").select("value").eq("key", "minimum_offer_percent").maybeSingle(),
     supabase.rpc("rating_summary", { p_user: listing.sellerId }).maybeSingle(),
+    supabase.from("items").select("shipping_cents").eq("id", listing.id).maybeSingle(),
+    supabase.from("app_config").select("key,value").in("key", ["courier_enabled", "payments_enabled", "buyer_fee_cents"]),
   ]);
+  const flagValue = (key: string) => (deliveryFlags.data ?? []).find((row) => row.key === key)?.value;
+  const postageCents = deliveryRow.data?.shipping_cents == null ? null : Number(deliveryRow.data.shipping_cents);
+  const deliveryOn = flagValue("courier_enabled") === true && flagValue("payments_enabled") === true && postageCents !== null;
+  const feeCents = Number(flagValue("buyer_fee_cents") ?? 0) || 0;
   const rating = (ratingResult.data ?? { average: null, review_count: 0 }) as { average: number | null; review_count: number };
   const minimumPercent = Number(offerConfig.data?.value ?? 60) || 60;
 
@@ -97,6 +104,7 @@ async function ItemContent({ params }: { params: PageProps<"/item/[id]">["params
           {listing.description && <p className="item-description">{listing.description}</p>}
 
           {available && !isOwner && <TradePanel itemId={listing.id} price={listing.price} signedIn={signedIn} minimumPercent={minimumPercent} />}
+          {available && !isOwner && deliveryOn && postageCents !== null && <DeliveryPanel itemId={listing.id} price={listing.price} postageCents={postageCents} feeCents={feeCents} signedIn={signedIn} />}
 
           <div className="item-actions">
             {available && !isOwner && <MessageSellerButton itemId={listing.id} sellerId={listing.sellerId} />}
